@@ -1,8 +1,8 @@
 import React from 'react'
-import cardSvg from '../assets/images/1B.svg'
+import { cardImages } from '../cardHelpers.js'
 
-export default function Card() {
+export default function Card(props) {
     return (
-        <img className='w-32' src={cardSvg} alt="Card" />
+        <img className='w-28' src={cardImages[props.card]} alt="Card" />
     )
 }
