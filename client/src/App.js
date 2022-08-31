@@ -1,12 +1,10 @@
-import { useEffect, useContext } from 'react';
+import { useContext, useEffect } from 'react';
 import SeatSection from './components/SeatSection';
 import Table from './components/Table';
-import { SocketProvider, SocketContext } from './context/SocketProvider';
-import { LobbyProvider } from './context/LobbyProvider';
+import { SocketContext } from './context/SocketProvider';
 
 
 function App() {
-  const log = console.log('test1')
   const { onConnect, onUpdate } = useContext(SocketContext);
 
   onUpdate()

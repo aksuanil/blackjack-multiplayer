@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useMemo } from 'react';
-import Card from './Card';
 import { SocketContext } from '../context/SocketProvider.js';
-import cardValues from '../utils.js'
+import { cardValues } from '../helpers/cardHelpers.js';
+import Card from './Card';
 
 let tableCardsValue = 0;
 

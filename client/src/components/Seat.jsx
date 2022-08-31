@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { SocketContext } from '../context/SocketProvider.js';
+import { cardValues } from '../helpers/cardHelpers.js';
 import Card from './Card';
-import { cardValues } from '../cardHelpers.js'
 import TimerArrow from './TimerArrow.jsx';
 
 export default function Seat(props) {

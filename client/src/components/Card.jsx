@@ -1,5 +1,5 @@
 import React from 'react'
-import { cardImages } from '../cardHelpers.js'
+import { cardImages } from '../helpers/cardHelpers.js'
 
 export default function Card(props) {
     return (

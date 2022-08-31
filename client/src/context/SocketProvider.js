@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useContext, useState } from "react";
+import React, { createContext, useState } from "react";
 import { io } from "socket.io-client";
 
 const SocketContext = createContext(undefined);
@@ -17,8 +17,8 @@ function SocketProvider({ children }) {
             { id: 3, name: "", status: false, cash: 200, cards: [], isTurn: false },
         ],
         table: {
-            deck: [22, 22  ],
-            tableCards: [22, 22  ],
+            deck: [22, 22],
+            tableCards: [22, 22],
             currentPlayer: 0,
             currentBet: 0,
             currentBetPlayer: 0,
@@ -48,3 +48,4 @@ function SocketProvider({ children }) {
 }
 
 export { SocketProvider, SocketContext };
+

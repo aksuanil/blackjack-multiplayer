@@ -2,7 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './assets/css/output.css';
-import { LobbyProvider } from './context/LobbyProvider';
 import { SocketProvider } from './context/SocketProvider';
 import reportWebVitals from './reportWebVitals';
 const root = ReactDOM.createRoot(document.getElementById('root'));

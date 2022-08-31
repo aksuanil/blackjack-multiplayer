@@ -1,6 +1,5 @@
-import React, { useState } from 'react'
-import { useEffect } from 'react'
-import downArrow from '../assets/images/down-arrow.svg'
+import React, { useEffect, useState } from 'react';
+import downArrow from '../assets/images/down-arrow.svg';
 
 export default function TimerArrow() {
     const [timeLeft, setTimeLeft] = useState(10);
