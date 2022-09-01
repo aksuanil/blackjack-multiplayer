@@ -1,9 +1,9 @@
 import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
-import { getSeated, getUnseated, addCash, addCard, clearCards, addStartingCards } from './controllers/seat.controller.js';
-import { initializeLobby, getLobbyData, openCard, startTurnLoop, getActiveSeats, endTurnLoop, disconnectWithSocketId, changePhase } from './controllers/lobby.controller.js';
-
+import { changePhase, clearRound, disconnectWithSocketId, endTurnLoop, getActiveSeats, getLobbyData, initializeLobby, openTableCard, startTurnLoop } from './controllers/lobby.controller.js';
+import { addBet, addCard, addCash, addStartingCards, clearCards, getSeated, getUnseated, setBusted } from './controllers/seat.controller.js';
+import { cardValues } from './helpers/cardHelpers.js';
 const app = express();
 
 const httpServer = http.createServer(app);
@@ -36,10 +36,10 @@ io.on('connection', (socket) => {
             case "initializeLobby":
                 initializeLobby(lobbyId);
                 break;
-            case "startRound":
-                await openCard(lobbyId);
-                io.sockets.in(lobbyId).emit("update", await addStartingCards(lobbyId));
-                break;
+            // case "startRound":
+            //     await openCard(lobbyId);
+            //     io.sockets.in(lobbyId).emit("update", await addStartingCards(lobbyId));
+            //     break;
             case "getSeated":
                 io.sockets.in(lobbyId).emit("update", await getSeated(lobbyId, data.seatId, data.socketId, data.name));
                 break;
@@ -47,7 +47,10 @@ io.on('connection', (socket) => {
                 io.sockets.in(lobbyId).emit("update", await getUnseated(lobbyId, data.seatId));
                 break;
             case "addCash":
-                addCash(lobbyId, data.seatId, data.cashAmount);
+                io.sockets.in(lobbyId).emit("update", await addCash(lobbyId, data.seatId, data.cashAmount));
+                break;
+            case "setBet":
+                io.sockets.in(lobbyId).emit("update", await addBet(lobbyId, data.seatId, data.betAmount));
                 break;
             case "addCard":
                 io.sockets.in(lobbyId).emit("update", await addCard(lobbyId, data.seatId));
@@ -55,7 +58,13 @@ io.on('connection', (socket) => {
             case "clearCards":
                 clearCards(lobbyId, data.seatId);
                 break;
-            case "startBetPhase":
+            case "setBusted":
+                // setBusted(lobbyId, data.seatId, data.isBusted);
+                io.sockets.in(lobbyId).emit("update", await setBusted(lobbyId, data.seatId, data.isBusted));
+                break;
+            case "startRound":
+                await clearRound(lobbyId)
+
                 const result = await getActiveSeats(lobbyId);
                 if (result) {
                     await changePhase(lobbyId, 'betting')
@@ -79,6 +88,9 @@ io.on('connection', (socket) => {
     })
     const startPlayingPhase = async (lobbyId, activeSeats) => {
         if (activeSeats) {
+            await openTableCard(lobbyId)
+            io.sockets.in(lobbyId).emit("update", await addStartingCards(lobbyId));
+
             await changePhase(lobbyId, 'playing')
             for (let i = 0; i < activeSeats.seats.length; i++) {
                 setTimeout(async () => {
@@ -87,6 +99,19 @@ io.on('connection', (socket) => {
                 }, i * 10000)
                 if (i === (activeSeats.seats.length - 1))
                     setTimeout(async () => {
+                        let response = await openTableCard(lobbyId)
+                        let totalTable = 0;
+                        response.table.tableCards.forEach(element => {
+                            totalTable += cardValues[element]
+                        });
+                        while (totalTable < 16) {
+                            totalTable = 0;
+                            response = await openTableCard(lobbyId);
+                            response.table.tableCards.forEach(element => {
+                                totalTable += cardValues[element]
+                            });
+                        }
+
                         const res = await endTurnLoop(lobbyId)
                         io.sockets.in(lobbyId).emit("update", res.value);
                     }, (i * 10000) + 10000)

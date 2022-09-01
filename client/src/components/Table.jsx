@@ -1,21 +1,12 @@
-import React, { useContext, useEffect, useMemo } from 'react';
+import React, { useContext, useMemo } from 'react';
 import { SocketContext } from '../context/SocketProvider.js';
-import { cardValues } from '../helpers/cardHelpers.js';
 import Card from './Card';
 
-let tableCardsValue = 0;
-
-export default function Table() {
+export default function Table(props) {
     const { lobbyData, emitAction } = useContext(SocketContext);
 
-    useEffect(() => {
-        lobbyData?.table?.tableCards?.map((card) => {
-            tableCardsValue += cardValues[card]?.value;
-        })
-    }, [JSON.stringify(lobbyData.table.tableCards)])
-
     const onClickStart = (index) => {
-        emitAction('startBetPhase', lobbyData.lobbyId);
+        emitAction('startRound', lobbyData.lobbyId);
     }
     const onClickDealCard = (index) => {
         emitAction('startRound', lobbyData.lobbyId);
@@ -34,13 +25,23 @@ export default function Table() {
 
     return (
         <div className='bg-green-900 grow flex flex-row justify-center'>
+            <div>{props.tableCardsValue}</div>
+
             <div className='w-1/2 relative'>
-                <div className='absolute left-[calc(50%)] top-[calc(40%)] transform -translate-x-1/2 -translate-y-1/2'>
-                    <Card card={1} />
+                {lobbyData?.table?.tableCards.map((card, index) => {
+                    return <div style={{ position: 'absolute', left: `calc(50% - ${index}*2rem)`, top: `calc(40% + ${index}*2rem)`, transform: `translate(-50%, -50%)` }}>
+                        {lobbyData.table.tableCards[index] ? <Card card={card} /> : <></>}
+                    </div>
+                })}
+                {/* <div className='absolute left-[calc(50%)] top-[calc(40%)] transform -translate-x-1/2 -translate-y-1/2'>
+                    <Card card={lobbyData?.table?.tableCards[0]} />
                 </div>
                 <div className='absolute left-[calc(50%-2rem)] top-[calc(40%+2rem)] transform -translate-x-1/2 -translate-y-1/2'>
-                    <Card card={0} />
+                    {lobbyData.table.tableCards[1] ? <Card card={lobbyData.table.tableCards[1]} /> : <Card card={0} />}
                 </div>
+                <div className='absolute left-[calc(50%-4rem)] top-[calc(40%+4rem)] transform -translate-x-1/2 -translate-y-1/2'>
+                    {lobbyData.table.tableCards[2] ? <Card card={lobbyData.table.tableCards[2]} /> : <></>}
+                </div> */}
                 {calculation}
             </div>
             <div className='flex gap-12 items-center '>

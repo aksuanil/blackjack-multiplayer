@@ -1,14 +1,14 @@
-import { db } from '../mongoUtil.js'
+import { db } from '../mongoUtil.js';
 
 const initializeLobby = (lobbyId) => {
     db.insertOne({
         lobbyId: lobbyId,
         phase: "",
         seats: [
-            { id: 0, socketId: "", name: "", status: false, cash: 0, cards: [], bet: 0, isTurn: false },
-            { id: 1, socketId: "", name: "", status: false, cash: 0, cards: [], bet: 0, isTurn: false },
-            { id: 2, socketId: "", name: "", status: false, cash: 0, cards: [], bet: 0, isTurn: false },
-            { id: 3, socketId: "", name: "", status: false, cash: 0, cards: [], bet: 0, isTurn: false },
+            { id: 0, socketId: "", name: "", status: false, cash: 200, cards: [], bet: 0, isTurn: false },
+            { id: 1, socketId: "", name: "", status: false, cash: 200, cards: [], bet: 0, isTurn: false },
+            { id: 2, socketId: "", name: "", status: false, cash: 200, cards: [], bet: 0, isTurn: false },
+            { id: 3, socketId: "", name: "", status: false, cash: 200, cards: [], bet: 0, isTurn: false },
         ],
         table: {
             deck: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
@@ -48,12 +48,7 @@ const getActiveSeats = async (lobbyId) => {
     return result[0]
 }
 
-const openCard = async (lobbyId) => {
-    // let randomCard;
-
-    // await db.find({ lobbyId: lobbyId }).project({ "table.deck": 1, _id: 0 }).forEach((item) => {
-    //     randomCard = item.table.deck[Math.floor(Math.random() * item.table.deck.length)];
-    // });
+const openTableCard = async (lobbyId) => {
     const res = await db.findOneAndUpdate(
         { lobbyId: lobbyId },
         { $push: { "table.tableCards": Math.floor(Math.random() * 52) } },
@@ -117,13 +112,24 @@ const changePhase = async (lobbyId, phase) => {
     return res;
 }
 
+const clearRound = async (lobbyId) => {
+    const res = await db.findOneAndUpdate(
+        { lobbyId: lobbyId },
+        {
+            $set: {
+                "seats.$[].isTurn": false, "seats.$[].isBusted": false, "seats.$[].currentBet": 0, "seats.$[].cards": [], "table.tableCards": [], phase: "betting"
+            }
+        });
+    return res;
+}
 
 const disconnectWithSocketId = async (lobbyId, socketId) => {
     const res = await db.findOneAndUpdate(
         { lobbyId: lobbyId, "seats.socketId": socketId },
-        { $set: { [`seats.$.status`]: false, [`seats.$.socketId`]: "", [`seats.$.name`]: "", [`seats.$.cash`]: 0, [`seats.$.cards`]: [] } },
+        { $set: { [`seats.$.status`]: false, [`seats.$.socketId`]: "", [`seats.$.name`]: "", [`seats.$.cash`]: 200, [`seats.$.cards`]: [], [`seats.$.isBusted`]: false } },
         { returnOriginal: false, returnDocument: "after" });
     return (res.value);
 };
 
-export { initializeLobby, getLobbyData, openCard, startTurnLoop, endTurnLoop, getActiveSeats, disconnectWithSocketId, changePhase };
+export { initializeLobby, getLobbyData, openTableCard, startTurnLoop, endTurnLoop, clearRound, getActiveSeats, disconnectWithSocketId, changePhase };
+

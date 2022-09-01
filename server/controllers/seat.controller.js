@@ -1,4 +1,4 @@
-import { db } from '../mongoUtil.js'
+import { db } from '../mongoUtil.js';
 import { getActiveSeats, getLobbyData } from './lobby.controller.js';
 
 const getSeated = async (lobbyId, seatId, socketId, name) => {
@@ -12,21 +12,26 @@ const getSeated = async (lobbyId, seatId, socketId, name) => {
 const getUnseated = async (lobbyId, seatId) => {
     const res = await db.findOneAndUpdate(
         { lobbyId: lobbyId },
-        { $set: { [`seats.${seatId}.status`]: false, [`seats.${seatId}.socketId`]: "", [`seats.${seatId}.cash`]: 0, [`seats.${seatId}.cards`]: [] } },
+        { $set: { [`seats.${seatId}.status`]: false, [`seats.${seatId}.socketId`]: "", [`seats.${seatId}.cash`]: 200, [`seats.${seatId}.cards`]: [], [`seats.${seatId}.isTurn`]: false, [`seats.${seatId}.isBusted`]: false } },
         { returnOriginal: false, returnDocument: "after" });
     return (res.value);
 };
 
-const addCash = (lobbyId, seatId, cashAmount) => {
-    db.updateOne(
+const addCash = async (lobbyId, seatId, cashAmount) => {
+    const res = await db.findOneAndUpdate(
         { lobbyId: lobbyId },
-        { $inc: { [`seats.${seatId}.cash`]: cashAmount } }, (err, lobby) => {
-            if (err) {
-                console.log(err);
-            } else {
-                console.log(lobby);
-            }
-        })
+        { $inc: { [`seats.${seatId}.cash`]: cashAmount } },
+        { returnOriginal: false, returnDocument: "after" });
+    return (res.value);
+};
+
+const addBet = async (lobbyId, seatId, betAmount) => {
+    await addCash(lobbyId, seatId, -betAmount)
+    const res = await db.findOneAndUpdate(
+        { lobbyId: lobbyId },
+        { $inc: { [`seats.${seatId}.currentBet`]: betAmount } },
+        { returnOriginal: false, returnDocument: "after" });
+    return (res.value);
 };
 
 const addCard = async (lobbyId, seatId) => {
@@ -42,6 +47,7 @@ const addStartingCards = async (lobbyId) => {
     let res;
     if (result) {
         for (let i = 0; i < result.seats.length; i++) {
+            await addCard(lobbyId, result.seats[i].id)
             res = await addCard(lobbyId, result.seats[i].id)
         }
     }
@@ -60,4 +66,13 @@ const clearCards = (lobbyId, seatId) => {
         })
 };
 
-export { getSeated, getUnseated, addCash, addCard, clearCards, addStartingCards };
+const setBusted = async (lobbyId, seatId, isBusted) => {
+    const res = await db.findOneAndUpdate(
+        { lobbyId: lobbyId },
+        { $set: { [`seats.${seatId}.isBusted`]: isBusted } },
+        { returnOriginal: false, returnDocument: "after" })
+    return (res.value);
+};
+
+export { getSeated, getUnseated, addCash, addCard, clearCards, addStartingCards, setBusted, addBet };
+
