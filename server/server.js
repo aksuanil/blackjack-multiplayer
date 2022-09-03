@@ -69,8 +69,12 @@ io.on('connection', (socket) => {
                 if (result) {
                     await changePhase(lobbyId, 'betting')
                     for (let i = 0; i < result.seats.length; i++) {
+                        await addBet(lobbyId, result.seats[i].id, 10);
                         setTimeout(async () => {
-                            const res = await startTurnLoop('TEST9', i, result.seats[i].id)
+                            let res = await startTurnLoop('TEST9', i, result.seats[i].id)
+                            // if (res.value.seats[i].currentBet === 0) {
+                            //     res = await addBet(lobbyId, result.seats[i].id, 10);
+                            // }
                             io.sockets.in(lobbyId).emit("update", res.value);
                         }, i * 10000)
                         if (i === (result.seats.length - 1))
