@@ -25,23 +25,14 @@ export default function Table(props) {
 
     return (
         <div className='bg-green-900 grow flex flex-row justify-center'>
-            <div>{props.tableCardsValue}</div>
 
             <div className='w-1/2 relative'>
+                <div className='absolute left-[45%] top-[10%] text-center font-bold border-2 border-black rounded-full w-[36px] p-1 mx-auto'  >{props.tableCardsValue}</div>
                 {lobbyData?.table?.tableCards.map((card, index) => {
-                    return <div style={{ position: 'absolute', left: `calc(50% - ${index}*2rem)`, top: `calc(40% + ${index}*2rem)`, transform: `translate(-50%, -50%)` }}>
+                    return <div className='shadow-[-6px_0px_10px_-2px_rgba(0,0,0,0.2)] shadow-black rounded-md' style={{ position: 'absolute', left: `calc(50% - ${index}*2rem)`, top: `calc(40% + ${index}*2rem)`, transform: `translate(-50%, -50%)` }}>
                         {lobbyData.table.tableCards[index] ? <Card card={card} /> : <></>}
                     </div>
                 })}
-                {/* <div className='absolute left-[calc(50%)] top-[calc(40%)] transform -translate-x-1/2 -translate-y-1/2'>
-                    <Card card={lobbyData?.table?.tableCards[0]} />
-                </div>
-                <div className='absolute left-[calc(50%-2rem)] top-[calc(40%+2rem)] transform -translate-x-1/2 -translate-y-1/2'>
-                    {lobbyData.table.tableCards[1] ? <Card card={lobbyData.table.tableCards[1]} /> : <Card card={0} />}
-                </div>
-                <div className='absolute left-[calc(50%-4rem)] top-[calc(40%+4rem)] transform -translate-x-1/2 -translate-y-1/2'>
-                    {lobbyData.table.tableCards[2] ? <Card card={lobbyData.table.tableCards[2]} /> : <></>}
-                </div> */}
                 {calculation}
             </div>
             <div className='flex gap-12 items-center '>

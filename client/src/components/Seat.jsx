@@ -73,29 +73,31 @@ export default function Seat(props) {
     return (
         <div className='flex flex-col w-1/4 px-10 pb-10 h-full justify-end relative'>
             {lobbyData?.seats[props.index]?.isTurn ? <TimerArrow /> : <div></div>}
-            {lobbyData?.seats[props.index]?.isBusted ? <div>BUSTED</div> : <div></div>}
+            {cardsValue > 0 ? <div className='text-center border-b-2 border-black p-1 mx-auto mb-4'>{cardsValue}</div> : <div></div>}
+            {lobbyData?.seats[props.index]?.isBusted ? <div className='flex justify-center text-red-900 font-bold text-xl bg-red-600'>BUSTED</div> : <div></div>}
+            <div className='relative h-full'>
+                {lobbyData?.seats[props.index]?.cards?.map((card, index) => {
+                    return <div className='shadow-[-6px_0px_8px_-2px_rgba(0,0,0,0.2)] shadow-black rounded-md' style={{ position: 'absolute', right: `calc(40% - ${index}*2rem)` }}>
+                        <Card key={index} card={card} />
+                    </div>
 
+                })}
+            </div>
             {lobbyData?.seats[props.index]?.socketId === socket.id
                 ?
-                <div className='flex flex-col'>
-                    {lobbyData?.seats[props.index]?.cards?.map((card, index) => {
-                        return <div style={{ position: 'absolute', right: `calc(30% - ${index}*2rem)`, top: `calc(25% - ${index}*2rem)`, transform: `translate(-50%, -50%)` }}>
-                            <Card key={index} card={card} />
-                        </div>
+                <div className='flex flex-col bg-yellow-900 border-black border-2 rounded-md'>
 
-                    })}
-                    <div className='text-center'>{cardsValue}</div>
-                    <div className='flex justify-between text-xl bg-orange-700 rounded-r-2xl rounded-l-md items-center'>
+                    <div className='flex justify-between text-xl bg-gradient-to-r from-neutral-500 to bg-zinc-900 rounded-t-md rounded-tr-2xl items-center'>
                         <div>
                             Cash: {lobbyData?.seats[props.index]?.cash}$
                         </div>
                         <div>Bet: {lobbyData?.seats[props.index]?.currentBet}$</div>
-                        <button onClick={() => onClickUnseat(props.index)} className='font-bold text-3xl bg-red-800 hover:bg-red-700 border-black border-2 rounded-t-xl p-1 w-10'>
+                        <button onClick={() => onClickUnseat(props.index)} className='font-bold text-3xl bg-red-800 hover:bg-red-700 rounded-md p-[6px] w-10'>
                             <img src={exit} alt='Exit' />
                         </button>
                     </div>
                     {/* <button onClick={() => onClickUnseat(props.index)} className='font-bold text-3xl bg-red-800 border-black border-2'>LEAVE</button> */}
-                    <div className='flex justify-around font-bold text-3xl border-black border-2'>
+                    <div className='flex justify-around font-bold text-3xl '>
                         <div>
                             {lobbyData?.seats[props.index]?.name || "TEST NAME"}
                         </div>
@@ -119,13 +121,27 @@ export default function Seat(props) {
                 </div>
                 : lobbyData?.seats[props.index]?.status ?
                     <div className='flex flex-col'>
-                        {lobbyData?.seats[props.index]?.cards?.map((card, index) => {
-                            return <div style={{ position: 'absolute', right: `calc(30% - ${index}*2rem)`, top: `calc(25% - ${index}*2rem)`, transform: `translate(-50%, -50%)` }}>
+                        {/* {lobbyData?.seats[props.index]?.cards?.map((card, index) => {
+                            return <div className='shadow-[-6px_0px_8px_-2px_rgba(0,0,0,0.2)] rounded-md shadow-black' style={{ position: 'absolute', right: `calc(30% - ${index}*2rem)`, top: `calc(25% )`, transform: `translate(-50%, -50%)` }}>
                                 <Card key={index} card={card} />
                             </div>
 
-                        })}
-                        <div className='flex justify-around'>
+                        })} */}
+                        {/* <div className='text-center'>{cardsValue}</div> */}
+                        <div className='flex justify-around text-xl bg-yellow-800 rounded-t-md items-center h-10'>
+                            <div>
+                                Cash: {lobbyData?.seats[props.index]?.cash}$
+                            </div>
+                            <div>
+                                Bet: {lobbyData?.seats[props.index]?.currentBet}$
+                            </div>
+                        </div>
+                        <div className='flex justify-around font-bold text-3xl border-black border-2'>
+                            <div>
+                                {lobbyData?.seats[props.index]?.name || "TEST NAME"}
+                            </div>
+                        </div>
+                        {/* <div className='flex justify-around'>
                             <div>{cardsValue}</div>
                             <div>Bet: {lobbyData?.seats[props.index]?.currentBet}</div>
                         </div>
@@ -136,7 +152,7 @@ export default function Seat(props) {
                             <div>
                                 {lobbyData?.seats[props.index]?.cash} $
                             </div>
-                        </div>
+                        </div> */}
                     </div>
                     : props.isSeated === false ?
                         <button onClick={() => onClickSeat(props.index)} className='font-bold text-6xl border-black border-2'>+</button>

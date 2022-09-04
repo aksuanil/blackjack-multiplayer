@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
+import BottomUI from './components/BottomUI';
 import SeatSection from './components/SeatSection';
 import Table from './components/Table';
 import { SocketContext } from './context/SocketProvider';
@@ -25,6 +26,7 @@ function App() {
     <div className='flex flex-col h-[100vh] overflow-hidden'>
       <Table tableCardsValue={tableCardsValue} />
       <SeatSection tableCardsValue={tableCardsValue} />
+      <BottomUI/>
     </div>
   );
 }
