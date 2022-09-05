@@ -62,47 +62,42 @@ export default function Seat(props) {
     }, [cardsValue, tableCardsValue])
 
     return (
-        <div className='flex flex-col w-1/4 px-10 pb-10 h-full justify-end relative'>
+        <div className={lobbyData?.seats[props.index]?.isTurn ? 'flex flex-col w-1/4 px-6 pb-6 h-full justify-end relative bg-green-600 shadow-inner shadow-black rounded-t-full bg-opacity-50' : 'flex flex-col w-1/4 px-6 pb-6 h-full justify-end relative'}>
             {lobbyData?.seats[props.index]?.isTurn ? <TimerArrow /> : <div></div>}
-            {cardsValue > 0 ? <div className='text-center border-b-2 border-black p-1 mx-auto mb-4 font-bold'>{cardsValue}</div> : <div></div>}
             {lobbyData?.seats[props.index]?.isBusted ? <div className='flex justify-center text-red-900 font-bold text-xl bg-red-600'>BUSTED</div> : <div></div>}
-            <div className='relative h-full'>
+            <div className='relative min-h-[140px]'>
                 {lobbyData?.seats[props.index]?.cards?.map((card, index) => {
                     return <div className='shadow-[-6px_0px_8px_-2px_rgba(0,0,0,0.2)] shadow-black rounded-md' style={{ position: 'absolute', right: `calc(40% - ${index}*2rem)` }}>
                         <Card key={index} card={card} />
                     </div>
-
                 })}
             </div>
+            {cardsValue > 0 ? <div className='text-center border-b-2 border-black p-1 mx-auto m-2 font-bold'>{cardsValue}</div> : <div></div>}
             {lobbyData?.seats[props.index]?.socketId === socket.id
                 ?
-                <div className='flex flex-col bg-yellow-900 border-black border-2 rounded-md'>
-                    <div className='flex justify-around font-bold text-3xl '>
-                        <div>
-                            {lobbyData?.seats[props.index]?.name || "TEST NAME"}
-                        </div>
-                    </div>
+                <div className='flex justify-around text-zinc-300 font-semibold text-lg tracking-wider py-1 mt-8 rounded-md border-2 border-stone-900' style={{ backgroundColor: '#171a1f', backgroundImage: '-webkit-linear-gradient(-30deg, #AD1D00 65%, #E02500 35%)' }}>
+                    {lobbyData?.seats[props.index]?.name || "TEST NAME"}
                 </div>
                 : lobbyData?.seats[props.index]?.status ?
                     <div className='flex flex-col'>
-                        <div className='flex justify-around text-xl bg-yellow-800 rounded-t-md items-center h-10'>
+                        <div className='flex justify-around font-semibold text-lg rounded-t-md border-2 border-b-0 border-stone-800 bg-zinc-700 w-3/4 self-center' >
                             <div>
-                                Cash: {lobbyData?.seats[props.index]?.cash}$
+                                {lobbyData?.seats[props.index]?.cash}$
                             </div>
                             <div>
                                 Bet: {lobbyData?.seats[props.index]?.currentBet}$
                             </div>
                         </div>
-                        <div className='flex justify-around font-bold text-3xl border-black border-2'>
+                        <div className='flex justify-around text-gray-400 font-semibold text-lg tracking-wider py-1 rounded-md border-2 border-stone-900' style={{ backgroundColor: '#171a1f', backgroundImage: '-webkit-linear-gradient(-30deg, #1a1e24 65%, #2c313b 35%)' }}>
                             <div>
                                 {lobbyData?.seats[props.index]?.name || "TEST NAME"}
                             </div>
                         </div>
                     </div>
                     : props.isSeated === false ?
-                        <button onClick={() => onClickSeat(props.index)} className='font-bold text-6xl border-black border-2'>+</button>
+                        <button onClick={() => onClickSeat(props.index)} className='border-2 border-gray-900 rounded-lg text-6xl font-bold bg-red-900 bg-opacity-80 hover:bg-opacity-100'>+</button>
                         :
-                        <div>EMPTY</div>
+                        <div className='border-2 border-gray-900 py-4 text-center rounded-lg'>EMPTY</div>
             }
         </div>
     )

@@ -1,10 +1,10 @@
 import { useContext, useEffect, useState } from 'react';
+import tableArt from './assets/images/Table.jpg';
 import BottomUI from './components/BottomUI';
 import SeatSection from './components/SeatSection';
 import Table from './components/Table';
 import { SocketContext } from './context/SocketProvider';
 import { cardValues } from './helpers/cardHelpers.js';
-import tableArt from './assets/images/Table.jpg';
 
 function App() {
   const { onConnect, onUpdate, lobbyData } = useContext(SocketContext);
