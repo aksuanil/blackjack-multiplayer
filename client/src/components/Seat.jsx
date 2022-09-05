@@ -8,7 +8,6 @@ import TimerArrow from './TimerArrow.jsx';
 
 export default function Seat(props) {
 
-
     const [cardsValue, setCardsValue] = useState(99)
     const { emitAction, lobbyData, socket } = useContext(SocketContext);
 
@@ -28,19 +27,11 @@ export default function Seat(props) {
     const onClickSeat = (index) => {
         emitAction('getSeated', lobbyData.lobbyId, { seatId: index, socketId: socket.id, name: 'test name' });
         props.setIsSeated(true)
+        props.setSeatNumber(index)
     }
     const onClickUnseat = (index) => {
         emitAction('getUnseated', lobbyData.lobbyId, { seatId: index });
         props.setIsSeated(false)
-    }
-    const onClickHit = (index) => {
-        emitAction('addCard', lobbyData.lobbyId, { seatId: index });
-    }
-    const onClickPass = (index) => {
-        //
-    }
-    const onClickBet = (betAmount) => {
-        emitAction('setBet', lobbyData.lobbyId, { seatId: props.index, betAmount: betAmount });
     }
     useEffect(() => {
         let val = 0;
@@ -73,7 +64,7 @@ export default function Seat(props) {
     return (
         <div className='flex flex-col w-1/4 px-10 pb-10 h-full justify-end relative'>
             {lobbyData?.seats[props.index]?.isTurn ? <TimerArrow /> : <div></div>}
-            {cardsValue > 0 ? <div className='text-center border-b-2 border-black p-1 mx-auto mb-4'>{cardsValue}</div> : <div></div>}
+            {cardsValue > 0 ? <div className='text-center border-b-2 border-black p-1 mx-auto mb-4 font-bold'>{cardsValue}</div> : <div></div>}
             {lobbyData?.seats[props.index]?.isBusted ? <div className='flex justify-center text-red-900 font-bold text-xl bg-red-600'>BUSTED</div> : <div></div>}
             <div className='relative h-full'>
                 {lobbyData?.seats[props.index]?.cards?.map((card, index) => {
@@ -86,48 +77,14 @@ export default function Seat(props) {
             {lobbyData?.seats[props.index]?.socketId === socket.id
                 ?
                 <div className='flex flex-col bg-yellow-900 border-black border-2 rounded-md'>
-
-                    <div className='flex justify-between text-xl bg-gradient-to-r from-neutral-500 to bg-zinc-900 rounded-t-md rounded-tr-2xl items-center'>
-                        <div>
-                            Cash: {lobbyData?.seats[props.index]?.cash}$
-                        </div>
-                        <div>Bet: {lobbyData?.seats[props.index]?.currentBet}$</div>
-                        <button onClick={() => onClickUnseat(props.index)} className='font-bold text-3xl bg-red-800 hover:bg-red-700 rounded-md p-[6px] w-10'>
-                            <img src={exit} alt='Exit' />
-                        </button>
-                    </div>
-                    {/* <button onClick={() => onClickUnseat(props.index)} className='font-bold text-3xl bg-red-800 border-black border-2'>LEAVE</button> */}
                     <div className='flex justify-around font-bold text-3xl '>
                         <div>
                             {lobbyData?.seats[props.index]?.name || "TEST NAME"}
                         </div>
                     </div>
-                    {(lobbyData?.phase === 'betting' && lobbyData?.seats[props.index]?.isTurn && !lobbyData?.seats[props.index]?.isBusted) ?
-                        <div className='grid grid-cols-3'>
-                            <button onClick={() => onClickBet(10)} className='border-2 border-black'>5</button>
-                            <button onClick={() => onClickBet(10)} className='border-2 border-black'>10</button>
-                            <button onClick={() => onClickBet(20)} className='border-2 border-black'>20</button>
-                            <button onClick={() => onClickBet(50)} className='border-2 border-black'>50</button>
-                            <button onClick={() => onClickBet(100)} className='border-2 border-black'>100</button>
-                            <button onClick={() => onClickBet(200)} className='border-2 border-black'>200</button>
-                        </div> : null
-                    }
-                    {(lobbyData?.phase === 'playing' && lobbyData?.seats[props.index]?.isTurn && !lobbyData?.seats[props.index]?.isBusted) ?
-                        <div className='flex justify-evenly'>
-                            <button onClick={() => onClickHit(props.index)} className='grow border-2 border-black bg-blue-600'>HIT</button>
-                            <button onClick={() => onClickPass(props.index)} className='grow border-2 border-black bg-yellow-700'>PASS</button>
-                        </div> : null
-                    }
                 </div>
                 : lobbyData?.seats[props.index]?.status ?
                     <div className='flex flex-col'>
-                        {/* {lobbyData?.seats[props.index]?.cards?.map((card, index) => {
-                            return <div className='shadow-[-6px_0px_8px_-2px_rgba(0,0,0,0.2)] rounded-md shadow-black' style={{ position: 'absolute', right: `calc(30% - ${index}*2rem)`, top: `calc(25% )`, transform: `translate(-50%, -50%)` }}>
-                                <Card key={index} card={card} />
-                            </div>
-
-                        })} */}
-                        {/* <div className='text-center'>{cardsValue}</div> */}
                         <div className='flex justify-around text-xl bg-yellow-800 rounded-t-md items-center h-10'>
                             <div>
                                 Cash: {lobbyData?.seats[props.index]?.cash}$
@@ -141,18 +98,6 @@ export default function Seat(props) {
                                 {lobbyData?.seats[props.index]?.name || "TEST NAME"}
                             </div>
                         </div>
-                        {/* <div className='flex justify-around'>
-                            <div>{cardsValue}</div>
-                            <div>Bet: {lobbyData?.seats[props.index]?.currentBet}</div>
-                        </div>
-                        <div className='flex flex-col text-center gap-4 p-2 font-bold text-3xl border-black border-2'>
-                            <div>
-                                {lobbyData?.seats[props.index]?.name}
-                            </div>
-                            <div>
-                                {lobbyData?.seats[props.index]?.cash} $
-                            </div>
-                        </div> */}
                     </div>
                     : props.isSeated === false ?
                         <button onClick={() => onClickSeat(props.index)} className='font-bold text-6xl border-black border-2'>+</button>

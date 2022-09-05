@@ -24,7 +24,7 @@ export default function Table(props) {
     const calculation = useMemo(() => getDeck(), []);
 
     return (
-        <div className='bg-green-900 grow flex flex-row justify-center'>
+        <div className='grow flex flex-row justify-center'>
 
             <div className='w-1/2 relative'>
                 <div className='absolute left-[45%] top-[10%] text-center font-bold border-2 border-black rounded-full w-[36px] p-1 mx-auto'  >{props.tableCardsValue}</div>
