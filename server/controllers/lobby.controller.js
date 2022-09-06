@@ -3,7 +3,7 @@ import { db } from '../mongoUtil.js';
 const initializeLobby = (lobbyId) => {
     db.insertOne({
         lobbyId: lobbyId,
-        phase: "",
+        phase: "NOT_STARTED",
         seats: [
             { id: 0, socketId: "", name: "", status: false, cash: 200, cards: [], bet: 0, isTurn: false },
             { id: 1, socketId: "", name: "", status: false, cash: 200, cards: [], bet: 0, isTurn: false },
@@ -11,7 +11,7 @@ const initializeLobby = (lobbyId) => {
             { id: 3, socketId: "", name: "", status: false, cash: 200, cards: [], bet: 0, isTurn: false },
         ],
         table: {
-            deck: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
+            deck: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
                 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52],
             tableCards: [],
             currentPlayer: 0,
@@ -29,7 +29,6 @@ const getLobbyData = async (lobbyId) => {
 
 const getActiveSeats = async (lobbyId) => {
     const result = await db.aggregate([
-        // Get just the docs that contain a shapes element where color is 'red'
         { $match: { lobbyId: lobbyId, 'seats.status': true } },
         {
             $project: {
@@ -109,7 +108,7 @@ const changePhase = async (lobbyId, phase) => {
         {
             returnOriginal: false, returnDocument: "after"
         });
-    return res;
+    return res.value;
 }
 
 const clearRound = async (lobbyId) => {
@@ -117,10 +116,14 @@ const clearRound = async (lobbyId) => {
         { lobbyId: lobbyId },
         {
             $set: {
-                "seats.$[].isTurn": false, "seats.$[].isBusted": false, "seats.$[].currentBet": 0, "seats.$[].cards": [], "table.tableCards": [], phase: "betting"
+                "seats.$[].isTurn": false, "seats.$[].isBusted": false, "seats.$[].currentBet": 0, "seats.$[].cards": [], "table.tableCards": []
             }
         });
     return res;
+}
+
+const deleteRoom = async (lobbyId) => {
+    db.deleteOne({ lobbyId: lobbyId });
 }
 
 const disconnectWithSocketId = async (lobbyId, socketId) => {
@@ -131,5 +134,5 @@ const disconnectWithSocketId = async (lobbyId, socketId) => {
     return (res.value);
 };
 
-export { initializeLobby, getLobbyData, openTableCard, startTurnLoop, endTurnLoop, clearRound, getActiveSeats, disconnectWithSocketId, changePhase };
+export { initializeLobby, getLobbyData, openTableCard, startTurnLoop, endTurnLoop, clearRound, getActiveSeats, disconnectWithSocketId, changePhase, deleteRoom };
 

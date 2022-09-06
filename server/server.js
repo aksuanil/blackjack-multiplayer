@@ -1,7 +1,7 @@
 import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
-import { changePhase, clearRound, disconnectWithSocketId, endTurnLoop, getActiveSeats, getLobbyData, initializeLobby, openTableCard, startTurnLoop } from './controllers/lobby.controller.js';
+import { changePhase, clearRound, deleteRoom, disconnectWithSocketId, endTurnLoop, getActiveSeats, getLobbyData, initializeLobby, openTableCard, startTurnLoop } from './controllers/lobby.controller.js';
 import { addBet, addCard, addCash, addStartingCards, clearCards, getSeated, getUnseated, setBusted } from './controllers/seat.controller.js';
 import { cardValues } from './helpers/cardHelpers.js';
 const app = express();
@@ -12,10 +12,13 @@ const io = new Server(httpServer, {
         origin: "*",
     }
 });
-getUnseated('TEST9', 0)
-getUnseated('TEST9', 1)
-getUnseated('TEST9', 2)
-getUnseated('TEST9', 3)
+getUnseated("TEST9", 0)
+getUnseated("TEST9", 1)
+getUnseated("TEST9", 2)
+getUnseated("TEST9", 3)
+await changePhase("TEST9", 'NOT_STARTED')
+await clearRound("TEST9")
+
 io.on('connection', (socket) => {
     socket.emit("user-join", "user joined");
     socket.join("TEST9");
@@ -28,7 +31,11 @@ io.on('connection', (socket) => {
     }
     )
     socket.on('disconnect', async function () {
-        await disconnectWithSocketId(socket.roomId, socket.id)
+        await disconnectWithSocketId(socket.roomId, socket.id);
+        const res = await getActiveSeats(socket.roomId)
+        if (!res) {
+            // deleteRoom(socket.roomId);
+        }
         io.sockets.in(socket.roomId).emit("update", await getLobbyData(socket.roomId));
     });
     socket.on("action", async (action, lobbyId, data) => {
@@ -36,15 +43,12 @@ io.on('connection', (socket) => {
             case "initializeLobby":
                 initializeLobby(lobbyId);
                 break;
-            // case "startRound":
-            //     await openCard(lobbyId);
-            //     io.sockets.in(lobbyId).emit("update", await addStartingCards(lobbyId));
-            //     break;
             case "getSeated":
                 io.sockets.in(lobbyId).emit("update", await getSeated(lobbyId, data.seatId, data.socketId, data.name));
                 const result = await getActiveSeats(lobbyId);
                 if (result.seats.length === 1) {
-                    setTimeout(() => {
+                    io.sockets.in(lobbyId).emit("update", await changePhase(lobbyId, 'INTERMISSION'));
+                    setTimeout(async () => {
                         startRound(lobbyId);
                     }, 5000)
                 }
@@ -65,7 +69,6 @@ io.on('connection', (socket) => {
                 clearCards(lobbyId, data.seatId);
                 break;
             case "setBusted":
-                // setBusted(lobbyId, data.seatId, data.isBusted);
                 io.sockets.in(lobbyId).emit("update", await setBusted(lobbyId, data.seatId, data.isBusted));
                 break;
             case "startRound":
@@ -77,26 +80,16 @@ io.on('connection', (socket) => {
     })
     const startRound = async (lobbyId) => {
         await clearRound(lobbyId)
-
-        const result = await getActiveSeats(lobbyId);
-        if (result) {
-            await changePhase(lobbyId, 'betting')
-            for (let i = 0; i < result.seats.length; i++) {
-                await addBet(lobbyId, result.seats[i].id, 10);
-                setTimeout(async () => {
-                    let res = await startTurnLoop('TEST9', i, result.seats[i].id)
-                    // if (res.value.seats[i].currentBet === 0) {
-                    //     res = await addBet(lobbyId, result.seats[i].id, 10);
-                    // }
-                    io.sockets.in(lobbyId).emit("update", res.value);
-                }, i * 10000)
-                if (i === (result.seats.length - 1))
-                    setTimeout(async () => {
-                        const res = await endTurnLoop(lobbyId)
-                        io.sockets.in(lobbyId).emit("update", res.value);
-                        startPlayingPhase(lobbyId, result)
-                    }, (i * 10000) + 10000)
+        const activeSeats = await getActiveSeats(lobbyId);
+        if (activeSeats) {
+            for (let i = 0; i < activeSeats.seats.length; i++) {
+                await addBet(lobbyId, activeSeats.seats[i].id, 10);
             }
+            io.sockets.in(lobbyId).emit("update", await changePhase(lobbyId, 'BETTING'));
+            setTimeout(async () => {
+                await changePhase(lobbyId, 'PLAYING');
+                startPlayingPhase(lobbyId, activeSeats)
+            }, 15000)
         }
     }
     const startPlayingPhase = async (lobbyId, activeSeats) => {
@@ -104,7 +97,7 @@ io.on('connection', (socket) => {
             await openTableCard(lobbyId)
             io.sockets.in(lobbyId).emit("update", await addStartingCards(lobbyId));
 
-            await changePhase(lobbyId, 'playing')
+            await changePhase(lobbyId, 'PLAYING')
             for (let i = 0; i < activeSeats.seats.length; i++) {
                 setTimeout(async () => {
                     const res = await startTurnLoop('TEST9', i, activeSeats.seats[i].id)
@@ -124,12 +117,16 @@ io.on('connection', (socket) => {
                                 totalTable += cardValues[element]
                             });
                         }
-
+                        await changePhase(lobbyId, 'ROUND_END')
                         const res = await endTurnLoop(lobbyId)
                         io.sockets.in(lobbyId).emit("update", res.value);
+                        setTimeout(async () => {
+                            await clearRound(lobbyId)
+                            io.sockets.in(lobbyId).emit("update", await changePhase(lobbyId, 'INTERMISSION'));
+                        }, 8000)
                         setTimeout(() => {
                             startRound(lobbyId);
-                        }, 5000)
+                        }, 15000)
                     }, (i * 10000) + 10000)
             }
         }

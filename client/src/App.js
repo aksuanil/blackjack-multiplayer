@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from 'react';
 import tableArt from './assets/images/Table.jpg';
 import BottomUI from './components/BottomUI';
+import MessageBar from './components/MessageBar';
 import SeatSection from './components/SeatSection';
 import Table from './components/Table';
 import { SocketContext } from './context/SocketProvider';
@@ -15,7 +16,7 @@ function App() {
   }, []);
 
   const [tableCardsValue, setTableCardsValue] = useState(0)
-  const [seatNumber, setSeatNumber] = useState(null)
+  const [playerSeatIndex, setPlayerSeatIndex] = useState(null)
 
   useEffect(() => {
     let tableValue = 0;
@@ -28,8 +29,9 @@ function App() {
   return (
     <div className='flex flex-col h-[100vh] overflow-hidden' style={{ background: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url(${tableArt})`, backgroundSize: 'cover' }}>
       <Table tableCardsValue={tableCardsValue} />
-      <SeatSection tableCardsValue={tableCardsValue} setSeatNumber={setSeatNumber} />
-      <BottomUI seatNumber={seatNumber} />
+      <MessageBar playerSeatIndex={playerSeatIndex} />
+      <SeatSection tableCardsValue={tableCardsValue} setPlayerSeatIndex={setPlayerSeatIndex} />
+      <BottomUI playerSeatIndex={playerSeatIndex} />
     </div>
   );
 }

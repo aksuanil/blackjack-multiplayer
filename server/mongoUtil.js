@@ -1,27 +1,5 @@
+import { MongoClient } from 'mongodb';
 import dbConfig from './config/db.config.js';
-import mongoDB, { MongoClient } from 'mongodb';
-
-// const url = `mongodb+srv://${dbConfig.dbUsername}:${dbConfig.dbPassword}@cluster0.qcf7o.mongodb.net/${dbConfig.dbName}?retryWrites=true&w=majority`;
-
-
-// export const connectToServer = (callback) => {
-//     MongoClient.connect(url, { useNewUrlParser: true }, function (err, client) {
-//         var _db = client.db("blackjackDB").collection("lobbydatas");
-//         return callback(err);
-//     });
-// }
-
-// export default {
-//     connectToServer: function (callback) {
-//         MongoClient.connect(url, { useNewUrlParser: true }, function (err, client) {
-//             _db = client.db("blackjackDB").collection("lobbydatas");
-//             return callback(err);
-//         });
-//     },
-//     getDb: function () {
-//         return _db;
-//     }
-// };
 
 export default class Mongo {
     constructor() {
@@ -42,3 +20,4 @@ await mongo.init();
 const db = mongo.db;
 
 export { db };
+

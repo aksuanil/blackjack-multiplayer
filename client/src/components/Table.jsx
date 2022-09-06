@@ -16,7 +16,7 @@ export default function Table(props) {
         let deck = [];
         for (let i = 0; i <= 32; i++) {
             deck.push(<div className='absolute left-[calc(80%)] top-[calc(55%)] transform -translate-x-1/2 -translate-y-1/2' style={{ paddingRight: `${(i * .1)}vh`, position: 'absolute', paddingTop: `${(i * .1)}vh` }}>
-                <Card key={i} card={0} />
+                <Card key={i} card={52} />
             </div>);
         }
         return deck;
@@ -27,8 +27,8 @@ export default function Table(props) {
         <div className='grow flex justify-center items-end h-2/5 relative'>
             <div className='w-1/2 '>
                 {lobbyData?.table?.tableCards.map((card, index) => {
-                    return <div className='shadow-[-6px_0px_10px_-2px_rgba(0,0,0,0.2)] shadow-black rounded-md' style={{ position: 'absolute', right: `calc(50% - ${index}*3rem)`, bottom: `calc(20% )` }}>
-                        {lobbyData.table.tableCards[index] ? <Card card={card} /> : <></>}
+                    return <div className="shadow-[-6px_0px_10px_-2px_rgba(0,0,0,0.2)] shadow-black rounded-md animate-flipInY" style={{ position: 'absolute', right: `calc(50% - ${index}*3rem)`, bottom: `calc(20% )`, animationDelay: `${index * 500}ms` }}>
+                        {lobbyData.table.tableCards[index] && <Card card={card} />}
                     </div>
                 })}
                 {props.tableCardsValue !== 0 ? <div className='text-center border-b-2 border-black p-1 mx-auto font-bold w-10'>{props.tableCardsValue}</div> : null}
