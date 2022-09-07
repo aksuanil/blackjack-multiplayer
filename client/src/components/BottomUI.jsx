@@ -14,7 +14,7 @@ import PopupUI from './PopupUI';
 
 export default function BottomUI(props) {
     const { emitAction, lobbyData } = useContext(SocketContext);
-    const [warning, setWarning] = useState('');
+    const [warningMessage, setWarningMessage] = useState('');
 
     const onClickUnseat = (index) => {
         emitAction('getUnseated', lobbyData.lobbyId, { seatId: index });
@@ -31,12 +31,7 @@ export default function BottomUI(props) {
             emitAction('setBet', lobbyData.lobbyId, { seatId: props.playerSeatIndex, betAmount: betAmount });
         }
         else {
-            setWarning('Insufficient credits!');
-
-            const warningTimeout = setTimeout(() => {
-                clearTimeout(warningTimeout);
-                setWarning('');
-            }, 4000)
+            setWarningMessage('Insufficient credits!');
         }
     }
     return (
@@ -45,7 +40,6 @@ export default function BottomUI(props) {
                 <div className='flex w-1/3 justify-center gap-4 '>
                     <div className='bg-green-800  shadow-black shadow-inner rounded-xl px-4 py-1 text-xl font-semibold'>Cash: {lobbyData?.seats[props.playerSeatIndex]?.cash}$</div>
                     <div className='bg-green-800  shadow-black shadow-inner rounded-xl px-4 py-1 text-xl font-semibold'>Bet: {lobbyData?.seats[props.playerSeatIndex]?.currentBet}$</div>
-                    {warning && <PopupUI message={warning} />}
                 </div>
 
                 {(lobbyData?.phase === 'PLAYING' && lobbyData?.seats[props.playerSeatIndex]?.isTurn && !lobbyData?.seats[props.playerSeatIndex]?.isBusted)
@@ -62,13 +56,18 @@ export default function BottomUI(props) {
                         <button disabled className='border-2 border-black rounded-full h-20 w-20 bg-yellow-600 opacity-50 font-bold shadow-black shadow-inner'><img className='w-8 mx-auto' src={standIcon} alt='StandIcon' />STAND</button>
                     </div>
                 }
-                <div className='flex w-1/3 gap-4 justify-center bg-green-800 shadow-inner shadow-black rounded-full rounded-r-none px-12 py-2 '>
-                    <button disabled={lobbyData?.phase !== 'BETTING'} onClick={() => onClickBet(5)} className='w-16 drop-shadow-[0_8px_8px_rgba(0,0,0,0.8)] disabled:opacity-50 hover:enabled:animate-infinite hover:enabled:animate-pulse '><img src={Chip5} alt='Chip5' /></button>
-                    <button disabled={lobbyData?.phase !== 'BETTING'} onClick={() => onClickBet(10)} className='w-16 drop-shadow-[0_8px_8px_rgba(0,0,0,0.8)] disabled:opacity-50 hover:enabled:animate-infinite hover:enabled:animate-pulse'><img src={Chip10} alt='Chip10' /></button>
-                    <button disabled={lobbyData?.phase !== 'BETTING'} onClick={() => onClickBet(20)} className='w-16 drop-shadow-[0_8px_8px_rgba(0,0,0,0.8)] disabled:opacity-50 hover:enabled:animate-infinite hover:enabled:animate-pulse'><img src={Chip20} alt='Chip20' /></button>
-                    <button disabled={lobbyData?.phase !== 'BETTING'} onClick={() => onClickBet(50)} className='w-16 drop-shadow-[0_8px_8px_rgba(0,0,0,0.8)] disabled:opacity-50 hover:enabled:animate-infinite hover:enabled:animate-pulse'><img src={Chip50} alt='Chip50' /></button>
-                    <button disabled={lobbyData?.phase !== 'BETTING'} onClick={() => onClickBet(100)} className='w-16 drop-shadow-[0_8px_8px_rgba(0,0,0,0.8)] disabled:opacity-50 hover:enabled:animate-infinite hover:enabled:animate-pulse'><img src={Chip100} alt='Chip100' /></button>
-                    <button disabled={lobbyData?.phase !== 'BETTING'} onClick={() => onClickBet(500)} className='w-16 drop-shadow-[0_8px_8px_rgba(0,0,0,0.8)] disabled:opacity-50 hover:enabled:animate-infinite hover:enabled:animate-pulse'><img src={Chip500} alt='Chip500' /></button>
+                <div className='flex w-1/3 justify-center rounded-full rounded-r-none' style={{ boxShadow: '0 0 6px 3px #fff, 0 0 10px 6px #f0f, 0 0 14px 9px #0ff' }}>
+                    <div className='flex gap-4 justify-center bg-green-800 shadow-inner shadow-black rounded-full rounded-r-none w-full py-2 relative'>
+                        <div className='absolute -top-3/4'>
+                            {warningMessage && <PopupUI message={warningMessage} messageCallback={setWarningMessage} />}
+                        </div>
+                        <button disabled={lobbyData?.phase !== 'BETTING'} onClick={() => onClickBet(5)} className='w-16 drop-shadow-[0_8px_8px_rgba(0,0,0,0.8)] disabled:opacity-50 hover:enabled:animate-infinite hover:enabled:animate-pulse '><img src={Chip5} alt='Chip5' /></button>
+                        <button disabled={lobbyData?.phase !== 'BETTING'} onClick={() => onClickBet(10)} className='w-16 drop-shadow-[0_8px_8px_rgba(0,0,0,0.8)] disabled:opacity-50 hover:enabled:animate-infinite hover:enabled:animate-pulse'><img src={Chip10} alt='Chip10' /></button>
+                        <button disabled={lobbyData?.phase !== 'BETTING'} onClick={() => onClickBet(20)} className='w-16 drop-shadow-[0_8px_8px_rgba(0,0,0,0.8)] disabled:opacity-50 hover:enabled:animate-infinite hover:enabled:animate-pulse'><img src={Chip20} alt='Chip20' /></button>
+                        <button disabled={lobbyData?.phase !== 'BETTING'} onClick={() => onClickBet(50)} className='w-16 drop-shadow-[0_8px_8px_rgba(0,0,0,0.8)] disabled:opacity-50 hover:enabled:animate-infinite hover:enabled:animate-pulse'><img src={Chip50} alt='Chip50' /></button>
+                        <button disabled={lobbyData?.phase !== 'BETTING'} onClick={() => onClickBet(100)} className='w-16 drop-shadow-[0_8px_8px_rgba(0,0,0,0.8)] disabled:opacity-50 hover:enabled:animate-infinite hover:enabled:animate-pulse'><img src={Chip100} alt='Chip100' /></button>
+                        <button disabled={lobbyData?.phase !== 'BETTING'} onClick={() => onClickBet(500)} className='w-16 drop-shadow-[0_8px_8px_rgba(0,0,0,0.8)] disabled:opacity-50 hover:enabled:animate-infinite hover:enabled:animate-pulse'><img src={Chip500} alt='Chip500' /></button>
+                    </div>
                 </div>
             </div>
         </>

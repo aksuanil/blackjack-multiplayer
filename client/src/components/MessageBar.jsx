@@ -17,7 +17,7 @@ export default function MessageBar(props) {
         switch (lobbyData.phase) {
             case "BETTING":
                 setMessage('PLEASE PLACE YOUR BET')
-                setMessageTimer(15)
+                setMessageTimer(10)
                 break;
             case "INTERMISSION":
                 setMessage('ROUND WILL BEGIN SHORTLY')

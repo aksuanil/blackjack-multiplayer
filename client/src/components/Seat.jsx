@@ -44,16 +44,20 @@ export default function Seat(props) {
     }, [JSON.stringify(lobbyData?.seats[props.index]?.cards)])
 
     useEffect(() => {
+        console.log(lobbyData?.seats[props.index]?.currentBet)
         if (lobbyData.phase === 'PLAYING' && cardsValue > 21) {
             emitAction('setBusted', lobbyData.lobbyId, { seatId: props.index, isBusted: true });
         }
         else if (lobbyData.phase === 'PLAYING' && cardsValue === 21) {
+            console.log('test1')
             emitAction('addCash', lobbyData.lobbyId, { seatId: props.index, cashAmount: lobbyData?.seats[props.index]?.currentBet * 2.5 });
         }
         else if (lobbyData.phase === 'ROUND_END' && tableCardsValue > 21) {
+            console.log('test2')
             emitAction('addCash', lobbyData.lobbyId, { seatId: props.index, cashAmount: lobbyData?.seats[props.index]?.currentBet * 2.5 });
         }
-        else if (lobbyData.phase === 'ROUND_END' && cardsValue > tableCardsValue) {
+        else if (lobbyData.phase === 'ROUND_END' && cardsValue > tableCardsValue && !lobbyData?.seats[props.index]?.isBusted) {
+            console.log('test3')
             emitAction('addCash', lobbyData.lobbyId, { seatId: props.index, cashAmount: lobbyData?.seats[props.index]?.currentBet * 2.5 });
         }
         else if (lobbyData.phase === 'ROUND_END' && tableCardsValue <= 21 && cardsValue !== 0) {
@@ -62,12 +66,12 @@ export default function Seat(props) {
     }, [cardsValue, tableCardsValue])
 
     return (
-        <div className={lobbyData?.seats[props.index]?.isTurn ? 'flex flex-col w-1/4 px-6 pb-6 h-full justify-end relative bg-green-600 shadow-inner shadow-black rounded-t-full bg-opacity-50' : 'flex flex-col w-1/4 px-6 pb-6 h-full justify-end relative'}>
+        <div className={lobbyData?.seats[props.index]?.isTurn ? 'flex flex-col w-1/4 px-6 pb-6 h-full justify-end relative bg-gradient-to-b from-transparent bg-opacity-50 via-green-500 to-green-900' : 'flex flex-col w-1/4 px-6 pb-6 h-full justify-end relative'}>
             {lobbyData?.seats[props.index]?.isTurn ? <TimerArrow /> : <div></div>}
             {lobbyData?.seats[props.index]?.isBusted ? <div className='flex justify-center text-red-900 font-bold text-xl bg-red-600'>BUSTED</div> : (lobbyData?.phase === 'ROUND_END' && lobbyData?.seats[props.index]?.status) && <div className='flex justify-center text-blue-900 font-bold text-xl bg-blue-600'>WON</div>}
             <div className='relative min-h-[140px]'>
                 {lobbyData?.seats[props.index]?.cards?.map((card, index) => {
-                    return <div className="shadow-[-6px_0px_8px_-2px_rgba(0,0,0,0.2)] shadow-black rounded-md animate-flipInY" style={{ position: 'absolute', right: `calc(40% - ${index}*2rem)`, animationDelay: `${index * 1000}ms` }}>
+                    return <div className="shadow-[-6px_0px_8px_-2px_rgba(0,0,0,0.2)] shadow-black rounded-md animate-flipInY" style={{ position: 'absolute', right: `calc(40% - ${index}*2rem)`, animationDelay: `${index <= 1 && index * 1000}ms` }}>
                         <Card key={index} card={card} />
                     </div>
                 })}
