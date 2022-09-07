@@ -1,10 +1,10 @@
 import express from 'express';
 import http from 'http';
-import debounce from 'just-debounce-it';
 import { Server } from 'socket.io';
 import { changePhase, clearRound, deleteRoom, disconnectWithSocketId, endTurnLoop, getActiveSeats, getLobbyData, initializeLobby, openTableCard, startTurnLoop } from './controllers/lobby.controller.js';
 import { addBet, addCard, addCash, addStartingCards, clearCards, getSeated, getUnseated, setBusted } from './controllers/seat.controller.js';
 import { cardValues } from './helpers/cardHelpers.js';
+import debounce from 'just-debounce-it';
 
 const app = express();
 
@@ -49,10 +49,11 @@ io.on('connection', (socket) => {
                 io.sockets.in(lobbyId).emit("update", await getSeated(lobbyId, data.seatId, data.socketId, data.name));
                 const result = await getActiveSeats(lobbyId);
                 if (result.seats.length === 1) {
+                    setIntervalById(lobbyId + '_startRound1', 5, lobbyId);
                     io.sockets.in(lobbyId).emit("update", await changePhase(lobbyId, 'INTERMISSION'));
                     setTimeout(async () => {
                         startRound(lobbyId);
-                    }, 5000)
+                    }, 6000)
                 }
                 break;
             case "getUnseated":
@@ -81,6 +82,20 @@ io.on('connection', (socket) => {
         }
     })
 
+    const intervalPool = {};
+    const setIntervalById = (id, counter, lobbyId) => {
+        // if (!intervalPool[id]) {
+        counter++;
+        intervalPool[id] = setInterval(function () {
+            counter--
+            io.sockets.in(lobbyId).emit('countdown', counter);
+            if (counter <= 0) {
+                clearInterval(intervalPool[id]);
+            }
+        }, 1000)
+        // }
+    }
+
     const debouncePool = {};
     function debounceById(id, func, delay) {
         if (!debouncePool[id]) {
@@ -100,14 +115,10 @@ io.on('connection', (socket) => {
             }
             io.sockets.in(lobbyId).emit("update", await changePhase(lobbyId, 'BETTING'));
 
+            setIntervalById(lobbyId + '_startBetting', 10, lobbyId);
             debounceById(lobbyId, async () => {
                 startPlayingPhase(lobbyId, activeSeats);
-            }, 10000);
-
-            // setTimeout(async () => {
-            //     await changePhase(lobbyId, 'PLAYING');
-            //     startPlayingPhase(lobbyId, activeSeats);
-            // }, 15000)
+            }, 11000);
         }
     }
     const startPlayingPhase = async (lobbyId, activeSeats) => {
@@ -117,41 +128,29 @@ io.on('connection', (socket) => {
             io.sockets.in(lobbyId).emit("update", await addStartingCards(lobbyId));
 
             for (let i = 0; i < activeSeats.seats.length; i++) {
+                setIntervalById(lobbyId + '_turnLoop_' + activeSeats.seats[i].id, i * 10, lobbyId);
                 debounceById(lobbyId + '_turnLoop_' + activeSeats.seats[i].id, async () => {
                     const res = await startTurnLoop(lobbyId, i, activeSeats.seats[i].id)
                     io.sockets.in(lobbyId).emit("update", res.value);
-                }, i * 10000);
+                }, i * 11000);
 
-                if (i === (activeSeats.seats.length - 1))
+                if (i === (activeSeats.seats.length - 1)) {
+                    setIntervalById(lobbyId + '_finishRound', (i * 10) + 10, lobbyId);
                     debounceById(lobbyId + '_finishRound', async () => {
                         await finishRound(lobbyId);
+                        setIntervalById(lobbyId + '_startIntermission', 8, lobbyId);
                         debounceById(lobbyId + '_startIntermission', async () => {
                             await startIntermission(lobbyId);
-                        }, 8000);
-                        debounceById(lobbyId + '_startRound', () => {
-                            startRound(lobbyId);
-                        }, 15000);
-                        // setTimeout(async () => {
-                        //     await startIntermission(lobbyId);
-                        // }, 8000)
-                        // setTimeout(async () => {
-                        //     await startRound(lobbyId);
-                        // }, 15000)
-                    }, (i * 10000) + 10000);
-
-                // setTimeout(async () => {
-                //     await finishRound(lobbyId);
-                //     setTimeout(async () => {
-                //         await startIntermission(lobbyId);
-                //     }, 8000)
-                //     setTimeout(async () => {
-                //         await startRound(lobbyId);
-                //     }, 15000)
-                // }, (i * 10000) + 10000)
+                            setIntervalById(lobbyId + '_startRound', 7, lobbyId);
+                            debounceById(lobbyId + '_startRound', () => {
+                                startRound(lobbyId);
+                            }, 8000);
+                        }, 9000);
+                    }, (i * 11000) + 11000);
+                }
             }
         }
     }
-
     const finishRound = async (lobbyId) => {
         let response = await openTableCard(lobbyId)
         let totalTable = 0;

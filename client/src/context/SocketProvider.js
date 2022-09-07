@@ -6,7 +6,7 @@ const SocketContext = createContext(undefined);
 const socket = io("http://localhost:8080");
 
 function SocketProvider({ children }) {
-
+    const [countdown, setCountdown] = useState();
     const [lobbyData, setLobbyData] = useState({
         lobbyId: "",
         phase: "",
@@ -26,6 +26,10 @@ function SocketProvider({ children }) {
         }
     });
 
+    socket.on("countdown", (serverData) => {
+        setCountdown(serverData);
+    });
+
     const emitAction = (action, lobbyId, data) => {
         socket.emit("action", action, lobbyId, data);
     }
@@ -41,7 +45,7 @@ function SocketProvider({ children }) {
     }
 
     return (
-        <SocketContext.Provider value={{ emitAction, onConnect, onUpdate, lobbyData, socket }}>
+        <SocketContext.Provider value={{ emitAction, onConnect, onUpdate, lobbyData, socket, countdown }}>
             {children}
         </SocketContext.Provider>
     );
