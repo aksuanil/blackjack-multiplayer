@@ -1,38 +1,18 @@
-import { useContext, useEffect, useState } from 'react';
-import tableArt from './assets/images/Table.jpg';
-import BottomUI from './components/BottomUI';
-import MessageBar from './components/MessageBar';
-import SeatSection from './components/SeatSection';
-import Table from './components/Table';
-import { SocketContext } from './context/SocketProvider';
-import { cardValues } from './helpers/cardHelpers.js';
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import GameLobby from './pages/GameLobby';
+import Home from './pages/Home';
 
 function App() {
-  const { onConnect, onUpdate, lobbyData } = useContext(SocketContext);
-
-  onUpdate()
-  useEffect(() => {
-    onConnect();
-  }, []);
-
-  const [tableCardsValue, setTableCardsValue] = useState(0)
-  const [playerSeatIndex, setPlayerSeatIndex] = useState(null)
-
-  useEffect(() => {
-    let tableValue = 0;
-    lobbyData?.table?.tableCards?.map((card) => {
-      tableValue += cardValues[card]
-    })
-    setTableCardsValue(tableValue)
-
-  }, [JSON.stringify(lobbyData?.table?.tableCards)])
   return (
-    <div className='flex flex-col h-[100vh] overflow-hidden' style={{ background: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url(${tableArt})`, backgroundSize: 'cover' }}>
-      <Table tableCardsValue={tableCardsValue} />
-      <MessageBar playerSeatIndex={playerSeatIndex} />
-      <SeatSection tableCardsValue={tableCardsValue} setPlayerSeatIndex={setPlayerSeatIndex} />
-      <BottomUI playerSeatIndex={playerSeatIndex} />
-    </div>
+
+    <BrowserRouter>
+      <Routes>
+        <Route index element={<Home />} />
+        <Route path="lobby/:lobbyId" element={<GameLobby />} />
+        {/* <Route path="*" element={<NoPage />} /> */}
+      </Routes>
+    </BrowserRouter>
+
   );
 }
 

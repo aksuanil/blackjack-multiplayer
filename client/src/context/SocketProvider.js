@@ -33,8 +33,8 @@ function SocketProvider({ children }) {
     const emitAction = (action, lobbyId, data) => {
         socket.emit("action", action, lobbyId, data);
     }
-    const onConnect = () => {
-        socket.emit("onConnect", 'TEST9', (serverData) => {
+    const onConnect = (lobbyId) => {
+        socket.emit("onConnect", lobbyId, (serverData) => {
             setLobbyData(serverData);
         });
     }

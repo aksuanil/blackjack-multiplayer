@@ -1,10 +1,10 @@
 import express from 'express';
 import http from 'http';
+import debounce from 'just-debounce-it';
 import { Server } from 'socket.io';
 import { changePhase, clearRound, deleteRoom, disconnectWithSocketId, endTurnLoop, getActiveSeats, getLobbyData, initializeLobby, openTableCard, startTurnLoop } from './controllers/lobby.controller.js';
 import { addBet, addCard, addCash, addStartingCards, clearCards, getSeated, getUnseated, setBusted } from './controllers/seat.controller.js';
 import { cardValues } from './helpers/cardHelpers.js';
-import debounce from 'just-debounce-it';
 
 const app = express();
 
@@ -53,7 +53,7 @@ io.on('connection', (socket) => {
                     io.sockets.in(lobbyId).emit("update", await changePhase(lobbyId, 'INTERMISSION'));
                     setTimeout(async () => {
                         startRound(lobbyId);
-                    }, 6000)
+                    }, 5500)
                 }
                 break;
             case "getUnseated":
