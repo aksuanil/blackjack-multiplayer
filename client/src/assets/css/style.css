@@ -1,0 +1,4 @@
+.borderLogo {
+    -webkit-filter: drop-shadow(3px 3px 0 black);
+filter: drop-shadow(3px 3px 0 black) 
+}
