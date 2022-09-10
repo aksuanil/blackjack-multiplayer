@@ -44,23 +44,22 @@ export default function Seat(props) {
     }, [JSON.stringify(lobbyData?.seats[props.index]?.cards)])
 
     useEffect(() => {
-        console.log(lobbyData?.seats[props.index]?.currentBet)
-        if (lobbyData.phase === 'PLAYING' && cardsValue > 21) {
+        if (lobbyData?.phase === 'PLAYING' && cardsValue > 21) {
             emitAction('setBusted', lobbyData.lobbyId, { seatId: props.index, isBusted: true });
         }
-        else if (lobbyData.phase === 'PLAYING' && cardsValue === 21) {
+        else if (lobbyData?.phase === 'PLAYING' && cardsValue === 21) {
             console.log('test1')
             emitAction('addCash', lobbyData.lobbyId, { seatId: props.index, cashAmount: lobbyData?.seats[props.index]?.currentBet * 2.5 });
         }
-        else if (lobbyData.phase === 'ROUND_END' && tableCardsValue > 21) {
+        else if (lobbyData?.phase === 'ROUND_END' && tableCardsValue > 21) {
             console.log('test2')
             emitAction('addCash', lobbyData.lobbyId, { seatId: props.index, cashAmount: lobbyData?.seats[props.index]?.currentBet * 2.5 });
         }
-        else if (lobbyData.phase === 'ROUND_END' && cardsValue > tableCardsValue && !lobbyData?.seats[props.index]?.isBusted) {
+        else if (lobbyData?.phase === 'ROUND_END' && cardsValue > tableCardsValue && !lobbyData?.seats[props.index]?.isBusted) {
             console.log('test3')
             emitAction('addCash', lobbyData.lobbyId, { seatId: props.index, cashAmount: lobbyData?.seats[props.index]?.currentBet * 2.5 });
         }
-        else if (lobbyData.phase === 'ROUND_END' && tableCardsValue <= 21 && cardsValue !== 0) {
+        else if (lobbyData?.phase === 'ROUND_END' && tableCardsValue <= 21 && cardsValue !== 0) {
             emitAction('setBusted', lobbyData.lobbyId, { seatId: props.index, isBusted: true });
         }
     }, [cardsValue, tableCardsValue])

@@ -1,6 +1,6 @@
 import { db } from '../mongoUtil.js';
 
-const initializeLobby = (lobbyId) => {
+const initializeLobby = async (lobbyId) => {
     db.insertOne({
         lobbyId: lobbyId,
         phase: "NOT_STARTED",

@@ -6,9 +6,13 @@ export default function MessageBar(props) {
     const [message, setMessage] = useState('');
 
     useEffect(() => {
-        switch (lobbyData.phase) {
+        console.log(lobbyData?.phase)
+        switch (lobbyData?.phase) {
             case "BETTING":
                 setMessage('PLEASE PLACE YOUR BET')
+                break;
+            case "NOT_STARTED":
+                setMessage('PLEASE TAKE A SEAT TO START THE GAME')
                 break;
             case "INTERMISSION":
                 setMessage('ROUND WILL BEGIN SHORTLY')

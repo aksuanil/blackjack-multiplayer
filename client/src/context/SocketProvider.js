@@ -33,8 +33,14 @@ function SocketProvider({ children }) {
     const emitAction = (action, lobbyId, data) => {
         socket.emit("action", action, lobbyId, data);
     }
-    const onConnect = (lobbyId) => {
-        socket.emit("onConnect", lobbyId, (serverData) => {
+    const emitJoin = (lobbyId) => {
+        console.log('join')
+        socket.emit('joinRoom', lobbyId)
+    }
+    const onConnect = (lobbyId, newUsername) => {
+        console.log('connect')
+        socket.emit("onConnect", { lobbyId, newUsername }, (serverData) => {
+            console.log(serverData)
             setLobbyData(serverData);
         });
     }
@@ -45,7 +51,7 @@ function SocketProvider({ children }) {
     }
 
     return (
-        <SocketContext.Provider value={{ emitAction, onConnect, onUpdate, lobbyData, socket, countdown }}>
+        <SocketContext.Provider value={{ emitJoin, emitAction, onConnect, onUpdate, lobbyData, socket, countdown }}>
             {children}
         </SocketContext.Provider>
     );

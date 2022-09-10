@@ -4,7 +4,7 @@ import { getActiveSeats, getLobbyData } from './lobby.controller.js';
 const getSeated = async (lobbyId, seatId, socketId, name) => {
     const res = await db.findOneAndUpdate(
         { lobbyId: lobbyId },
-        { $set: { [`seats.${seatId}.status`]: true, [`seats.${seatId}.socketId`]: socketId } },
+        { $set: { [`seats.${seatId}.status`]: true, [`seats.${seatId}.socketId`]: socketId, [`seats.${seatId}.name`]: name } },
         { returnOriginal: false, returnDocument: "after" });
     return (res.value);
 };

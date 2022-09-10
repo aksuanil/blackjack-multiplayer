@@ -22,12 +22,18 @@ await changePhase("TEST9", 'NOT_STARTED')
 await clearRound("TEST9")
 
 io.on('connection', (socket) => {
-    socket.emit("user-join", "user joined");
-    socket.join("TEST9");
-    console.log(`a user connected to ${Array.from(socket.rooms)[1]}`);
-    socket.roomId = Array.from(socket.rooms)[1]
-
-    socket.on("onConnect", async (lobbyId, cb) => {
+    socket.on('joinRoom', async (lobbyId) => {
+        const res = await getLobbyData(lobbyId);
+        if (!res) {
+            await initializeLobby(lobbyId);
+        };
+        await socket.join(lobbyId);
+        console.log(`a user connected to ${Array.from(socket.rooms)[1]}`);
+        socket.roomId = Array.from(socket.rooms)[1]
+    });
+    let username = 'guest';
+    socket.on("onConnect", async ({ lobbyId, newUsername }, cb) => {
+        username = newUsername;
         const result = await getLobbyData(lobbyId);
         cb(result);
     }
@@ -46,7 +52,8 @@ io.on('connection', (socket) => {
                 initializeLobby(lobbyId);
                 break;
             case "getSeated":
-                io.sockets.in(lobbyId).emit("update", await getSeated(lobbyId, data.seatId, data.socketId, data.name));
+                console.log(username);
+                io.sockets.in(lobbyId).emit("update", await getSeated(lobbyId, data.seatId, data.socketId, username));
                 const result = await getActiveSeats(lobbyId);
                 if (result.seats.length === 1) {
                     setIntervalById(lobbyId + '_startRound1', 5, lobbyId);
