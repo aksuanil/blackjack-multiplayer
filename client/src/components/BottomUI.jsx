@@ -9,8 +9,8 @@ import Chip20 from '../assets/images/20.svg';
 import Chip5 from '../assets/images/5.svg';
 import Chip50 from '../assets/images/50.svg';
 import Chip500 from '../assets/images/500.svg';
-import PopupUI from './PopupUI';
 import useBottomUI from '../hooks/useBottomUI';
+import PopupUI from './PopupUI';
 
 export default function BottomUI({ playerSeatIndex }) {
     const { lobbyData, warningMessage, setWarningMessage, onClickHit, onClickBet } = useBottomUI({ playerSeatIndex })

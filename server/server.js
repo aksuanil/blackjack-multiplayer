@@ -2,7 +2,7 @@ import express from 'express';
 import http from 'http';
 import debounce from 'just-debounce-it';
 import { Server } from 'socket.io';
-import { changePhase, clearRound, deleteRoom, disconnectWithSocketId, endTurnLoop, getActiveSeats, getLobbyData, findLobby, initializeLobby, openTableCard, startTurnLoop } from './controllers/lobby.controller.js';
+import { changePhase, clearRound, deleteRoom, disconnectWithSocketId, endTurnLoop, findLobby, getActiveSeats, getLobbyData, initializeLobby, openTableCard, startTurnLoop } from './controllers/lobby.controller.js';
 import { addBet, addCard, addCash, addStartingCards, clearCards, getSeated, getUnseated, setBusted } from './controllers/seat.controller.js';
 import { cardValues } from './helpers/cardHelpers.js';
 
@@ -14,12 +14,6 @@ const io = new Server(httpServer, {
         origin: "*",
     }
 });
-// getUnseated("TEST9", 0)
-// getUnseated("TEST9", 1)
-// getUnseated("TEST9", 2)
-// getUnseated("TEST9", 3)
-// await changePhase("TEST9", 'NOT_STARTED')
-// await clearRound("TEST9")
 
 io.on('connection', (socket) => {
     console.log('connectedSocket')

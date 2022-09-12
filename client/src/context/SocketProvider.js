@@ -1,14 +1,21 @@
-import React, { createContext, useState } from "react";
+import React, { createContext, useEffect, useState } from "react";
 import { io } from "socket.io-client";
+import useBeforeRender from "../hooks/useBeforeRender";
 
 const SocketContext = createContext(undefined);
 
 let socket = {};
 socket.id = 0;
-console.log('connect')
-socket = io("http://localhost:8080");
 
 function SocketProvider({ children }) {
+    useBeforeRender(() => {
+        socket = io("http://localhost:8080");
+        console.log('connect');
+    }, [])
+    // useEffect(() => {
+    //     socket = io("http://localhost:8080");
+    //     console.log('connect')
+    // }, [])
     const [countdown, setCountdown] = useState();
     const [isLoading, setIsLoading] = useState(false);
     const [lobbyData, setLobbyData] = useState({
