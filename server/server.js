@@ -43,6 +43,9 @@ io.on('connection', (socket) => {
         const result = await getLobbyData(lobbyId);
         console.log(lobbyId + ' lobby data sent')
         cb(result);
+        if (newUsername) {
+            emitSystemMessage(lobbyId, `${newUsername} connected`)
+        }
     }
     )
     socket.on('disconnect', async function () {
@@ -53,7 +56,12 @@ io.on('connection', (socket) => {
         }
         console.log('disconnected ' + socket.id + ' from ' + socket.roomId)
         io.sockets.in(socket.roomId).emit("update", await getLobbyData(socket.roomId));
+        emitSystemMessage(socket.roomId, `${username} disconnected`)
     });
+
+    const emitSystemMessage = (lobbyId, message) => {
+        io.sockets.in(lobbyId).emit("systemMessage", message);
+    }
 
     socket.on('sendMessage', (message, lobbyId) => {
         console.log(message, lobbyId)
