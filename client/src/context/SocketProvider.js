@@ -3,10 +3,14 @@ import { io } from "socket.io-client";
 
 const SocketContext = createContext(undefined);
 
-const socket = io("http://localhost:8080");
+let socket = {};
+socket.id = 0;
+console.log('connect')
+socket = io("http://localhost:8080");
 
 function SocketProvider({ children }) {
     const [countdown, setCountdown] = useState();
+    const [isLoading, setIsLoading] = useState(false);
     const [lobbyData, setLobbyData] = useState({
         lobbyId: "",
         phase: "",
@@ -26,23 +30,27 @@ function SocketProvider({ children }) {
         }
     });
 
-    socket.on("countdown", (serverData) => {
-        setCountdown(serverData);
-    });
-
+    const onCountdown = () => {
+        socket.on("countdown", (serverData) => {
+            setCountdown(serverData);
+        })
+    };
     const emitAction = (action, lobbyId, data) => {
         socket.emit("action", action, lobbyId, data);
     }
-    const emitJoin = (lobbyId) => {
-        console.log('join')
-        socket.emit('joinRoom', lobbyId)
+    const emitJoin = async (lobbyId, isCreated) => {
+        setIsLoading(true);
+        console.log('emitJoin')
+        await socket.emit('joinRoom', lobbyId, isCreated, (data) => {
+            // setIsLoading(data)
+        })
     }
-    const onConnect = (lobbyId, newUsername) => {
-        console.log('connect')
-        socket.emit("onConnect", { lobbyId, newUsername }, (serverData) => {
-            console.log(serverData)
+    const onConnect = async (lobbyId, newUsername) => {
+        console.log('onConnect')
+        await socket.emit("onConnect", lobbyId, newUsername, (serverData) => {
             setLobbyData(serverData);
         });
+        setIsLoading(false);
     }
     const onUpdate = () => {
         socket.on("update", (serverData) => {
@@ -50,8 +58,17 @@ function SocketProvider({ children }) {
         });
     }
 
+    const emitSendMessage = (message, lobbyId) => {
+        socket.emit("sendMessage", message, lobbyId);
+    }
+    const onReceiveMessage = (appendMessage) => {
+        socket.on("receiveMessage", (message) => {
+            appendMessage(message)
+        });
+    }
+
     return (
-        <SocketContext.Provider value={{ emitJoin, emitAction, onConnect, onUpdate, lobbyData, socket, countdown }}>
+        <SocketContext.Provider value={{ emitSendMessage, onReceiveMessage, emitJoin, emitAction, onConnect, onUpdate, lobbyData, socket, countdown, onCountdown, isLoading }}>
             {children}
         </SocketContext.Provider>
     );

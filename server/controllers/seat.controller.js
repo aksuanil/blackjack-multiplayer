@@ -18,6 +18,7 @@ const getUnseated = async (lobbyId, seatId) => {
 };
 
 const addCash = async (lobbyId, seatId, cashAmount) => {
+    console.log('beat amount' + cashAmount)
     const res = await db.findOneAndUpdate(
         { lobbyId: lobbyId },
         { $inc: { [`seats.${seatId}.cash`]: cashAmount } },
@@ -42,13 +43,12 @@ const addCard = async (lobbyId, seatId) => {
     return (res.value);
 };
 
-const addStartingCards = async (lobbyId) => {
-    const result = await getActiveSeats(lobbyId);
+const addStartingCards = async (lobbyId, activeSeats) => {
     let res;
-    if (result) {
-        for (let i = 0; i < result.seats.length; i++) {
-            await addCard(lobbyId, result.seats[i].id)
-            res = await addCard(lobbyId, result.seats[i].id)
+    if (activeSeats) {
+        for (let i = 0; i < activeSeats.seats.length; i++) {
+            await addCard(lobbyId, activeSeats.seats[i].id)
+            res = await addCard(lobbyId, activeSeats.seats[i].id)
         }
     }
     return res;

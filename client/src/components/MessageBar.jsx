@@ -6,7 +6,6 @@ export default function MessageBar(props) {
     const [message, setMessage] = useState('');
 
     useEffect(() => {
-        console.log(lobbyData?.phase)
         switch (lobbyData?.phase) {
             case "BETTING":
                 setMessage('PLEASE PLACE YOUR BET')

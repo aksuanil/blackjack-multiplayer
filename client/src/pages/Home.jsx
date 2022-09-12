@@ -1,6 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Link, useNavigate } from "react-router-dom";
-import style from '../assets/css/style.css';
+import { useNavigate } from "react-router-dom";
 import blackjackLogoBorder from '../assets/images/blackjack-logo-border.png';
 import blackjackLogo from '../assets/images/blackjack-logo.png';
 import { createRoomId } from '../helpers/formHelpers.js';
@@ -17,7 +16,7 @@ export default function Home() {
     }
     const handleCreateRoom = (e) => {
         e.preventDefault();
-        navigate(`/lobby/${createRoomId(6)}`, { state: { username: username } })
+        navigate(`/lobby/${createRoomId(6)}`, { state: { username: username, isCreate: true } })
     }
     const logoAnimation = () => {
         const obj = ['drop-shadow(0px 35px 50px #BA00DD)', 'drop-shadow(0px 35px 50px #FFB700)', 'drop-shadow(0px 35px 50px #00B4C4)', 'drop-shadow(0px 35px 50px #FF008F)']

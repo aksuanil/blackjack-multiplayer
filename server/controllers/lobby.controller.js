@@ -1,14 +1,14 @@
 import { db } from '../mongoUtil.js';
 
 const initializeLobby = async (lobbyId) => {
-    db.insertOne({
+    await db.insertOne({
         lobbyId: lobbyId,
         phase: "NOT_STARTED",
         seats: [
-            { id: 0, socketId: "", name: "", status: false, cash: 200, cards: [], bet: 0, isTurn: false },
-            { id: 1, socketId: "", name: "", status: false, cash: 200, cards: [], bet: 0, isTurn: false },
-            { id: 2, socketId: "", name: "", status: false, cash: 200, cards: [], bet: 0, isTurn: false },
-            { id: 3, socketId: "", name: "", status: false, cash: 200, cards: [], bet: 0, isTurn: false },
+            { id: 0, socketId: "", name: "", status: false, cash: 200, cards: [], bet: 0, isTurn: false, isPlaying: false },
+            { id: 1, socketId: "", name: "", status: false, cash: 200, cards: [], bet: 0, isTurn: false, isPlaying: false },
+            { id: 2, socketId: "", name: "", status: false, cash: 200, cards: [], bet: 0, isTurn: false, isPlaying: false },
+            { id: 3, socketId: "", name: "", status: false, cash: 200, cards: [], bet: 0, isTurn: false, isPlaying: false },
         ],
         table: {
             deck: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
@@ -24,6 +24,11 @@ const initializeLobby = async (lobbyId) => {
 
 const getLobbyData = async (lobbyId) => {
     const result = await db.find({ lobbyId: lobbyId }).toArray();
+    return result[0]
+}
+
+const findLobby = async (lobbyId) => {
+    const result = await db.find({ lobbyId: lobbyId }, { lobbyId: 1, _id: 0 }).toArray();
     return result[0]
 }
 
@@ -124,6 +129,7 @@ const clearRound = async (lobbyId) => {
 
 const deleteRoom = async (lobbyId) => {
     db.deleteOne({ lobbyId: lobbyId });
+    console.log('room deleted ' + lobbyId)
 }
 
 const disconnectWithSocketId = async (lobbyId, socketId) => {
@@ -134,5 +140,5 @@ const disconnectWithSocketId = async (lobbyId, socketId) => {
     return (res.value);
 };
 
-export { initializeLobby, getLobbyData, openTableCard, startTurnLoop, endTurnLoop, clearRound, getActiveSeats, disconnectWithSocketId, changePhase, deleteRoom };
+export { initializeLobby, getLobbyData, findLobby, openTableCard, startTurnLoop, endTurnLoop, clearRound, getActiveSeats, disconnectWithSocketId, changePhase, deleteRoom };
 

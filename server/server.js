@@ -2,7 +2,7 @@ import express from 'express';
 import http from 'http';
 import debounce from 'just-debounce-it';
 import { Server } from 'socket.io';
-import { changePhase, clearRound, deleteRoom, disconnectWithSocketId, endTurnLoop, getActiveSeats, getLobbyData, initializeLobby, openTableCard, startTurnLoop } from './controllers/lobby.controller.js';
+import { changePhase, clearRound, deleteRoom, disconnectWithSocketId, endTurnLoop, getActiveSeats, getLobbyData, findLobby, initializeLobby, openTableCard, startTurnLoop } from './controllers/lobby.controller.js';
 import { addBet, addCard, addCash, addStartingCards, clearCards, getSeated, getUnseated, setBusted } from './controllers/seat.controller.js';
 import { cardValues } from './helpers/cardHelpers.js';
 
@@ -14,27 +14,40 @@ const io = new Server(httpServer, {
         origin: "*",
     }
 });
-getUnseated("TEST9", 0)
-getUnseated("TEST9", 1)
-getUnseated("TEST9", 2)
-getUnseated("TEST9", 3)
-await changePhase("TEST9", 'NOT_STARTED')
-await clearRound("TEST9")
+// getUnseated("TEST9", 0)
+// getUnseated("TEST9", 1)
+// getUnseated("TEST9", 2)
+// getUnseated("TEST9", 3)
+// await changePhase("TEST9", 'NOT_STARTED')
+// await clearRound("TEST9")
 
 io.on('connection', (socket) => {
-    socket.on('joinRoom', async (lobbyId) => {
-        const res = await getLobbyData(lobbyId);
-        if (!res) {
+    console.log('connectedSocket')
+    socket.on('joinRoom', async (lobbyId, isCreated, cb) => {
+        const res = await findLobby(lobbyId);
+        if (isCreated && !res) {
             await initializeLobby(lobbyId);
-        };
-        await socket.join(lobbyId);
-        console.log(`a user connected to ${Array.from(socket.rooms)[1]}`);
+            await socket.join(lobbyId);
+            console.log('room created: ' + lobbyId)
+        }
+        else if (res) {
+            await socket.join(lobbyId);
+            console.log('socket joined: ' + lobbyId)
+        }
+        else {
+            // res 'room not exist'
+            return console.log('room is not exist')
+        }
         socket.roomId = Array.from(socket.rooms)[1]
+        cb(false)
+        return console.log(`a user connected to ${Array.from(socket.rooms)[1]}`);
     });
+
     let username = 'guest';
-    socket.on("onConnect", async ({ lobbyId, newUsername }, cb) => {
+    socket.on("onConnect", async (lobbyId, newUsername, cb) => {
         username = newUsername;
         const result = await getLobbyData(lobbyId);
+        console.log(lobbyId + ' lobby data sent')
         cb(result);
     }
     )
@@ -42,20 +55,25 @@ io.on('connection', (socket) => {
         await disconnectWithSocketId(socket.roomId, socket.id);
         const res = await getActiveSeats(socket.roomId)
         if (!res) {
-            // deleteRoom(socket.roomId);
+            deleteRoom(socket.roomId);
         }
+        console.log('disconnected ' + socket.id + ' from ' + socket.roomId)
         io.sockets.in(socket.roomId).emit("update", await getLobbyData(socket.roomId));
     });
+
+    socket.on('sendMessage', (message, lobbyId) => {
+        console.log(message, lobbyId)
+        socket.broadcast.to(lobbyId).emit('receiveMessage', message, username);
+    })
     socket.on("action", async (action, lobbyId, data) => {
         switch (action) {
             case "initializeLobby":
                 initializeLobby(lobbyId);
                 break;
             case "getSeated":
-                console.log(username);
                 io.sockets.in(lobbyId).emit("update", await getSeated(lobbyId, data.seatId, data.socketId, username));
                 const result = await getActiveSeats(lobbyId);
-                if (result.seats.length === 1) {
+                if (result?.seats?.length === 1) {
                     setIntervalById(lobbyId + '_startRound1', 5, lobbyId);
                     io.sockets.in(lobbyId).emit("update", await changePhase(lobbyId, 'INTERMISSION'));
                     setTimeout(async () => {
@@ -105,24 +123,20 @@ io.on('connection', (socket) => {
 
     const debouncePool = {};
     function debounceById(id, func, delay) {
-        if (!debouncePool[id]) {
-            debouncePool[id] = debounce(() => {
-                func();
-            }, delay);
-        }
+        debouncePool[id] = debounce(() => {
+            func();
+        }, delay);
         debouncePool[id]();
     }
 
     const startRound = async (lobbyId) => {
         await clearRound(lobbyId)
-        const activeSeats = await getActiveSeats(lobbyId);
+        let activeSeats = await getActiveSeats(lobbyId);
         if (activeSeats) {
             for (let i = 0; i < activeSeats.seats.length; i++) {
                 await addBet(lobbyId, activeSeats.seats[i].id, 10);
             }
             io.sockets.in(lobbyId).emit("update", await changePhase(lobbyId, 'BETTING'));
-
-            setIntervalById(lobbyId + '_startBetting', 10, lobbyId);
             debounceById(lobbyId, async () => {
                 startPlayingPhase(lobbyId, activeSeats);
             }, 11000);
@@ -132,23 +146,22 @@ io.on('connection', (socket) => {
         if (activeSeats) {
             await changePhase(lobbyId, 'PLAYING')
             await openTableCard(lobbyId)
-            io.sockets.in(lobbyId).emit("update", await addStartingCards(lobbyId));
+            io.sockets.in(lobbyId).emit("update", await addStartingCards(lobbyId, activeSeats));
 
             for (let i = 0; i < activeSeats.seats.length; i++) {
-                setIntervalById(lobbyId + '_turnLoop_' + activeSeats.seats[i].id, i * 10, lobbyId);
                 debounceById(lobbyId + '_turnLoop_' + activeSeats.seats[i].id, async () => {
                     const res = await startTurnLoop(lobbyId, i, activeSeats.seats[i].id)
                     io.sockets.in(lobbyId).emit("update", res.value);
                 }, i * 11000);
 
                 if (i === (activeSeats.seats.length - 1)) {
-                    setIntervalById(lobbyId + '_finishRound', (i * 10) + 10, lobbyId);
+                    // setIntervalById(lobbyId + '_finishRound', (i * 10) + 10, lobbyId);
                     debounceById(lobbyId + '_finishRound', async () => {
                         await finishRound(lobbyId);
-                        setIntervalById(lobbyId + '_startIntermission', 8, lobbyId);
+                        // setIntervalById(lobbyId + '_startIntermission', 8, lobbyId);
                         debounceById(lobbyId + '_startIntermission', async () => {
                             await startIntermission(lobbyId);
-                            setIntervalById(lobbyId + '_startRound', 7, lobbyId);
+                            // setIntervalById(lobbyId + '_startRound', 7, lobbyId);
                             debounceById(lobbyId + '_startRound', () => {
                                 startRound(lobbyId);
                             }, 8000);
@@ -161,13 +174,13 @@ io.on('connection', (socket) => {
     const finishRound = async (lobbyId) => {
         let response = await openTableCard(lobbyId)
         let totalTable = 0;
-        response.table.tableCards.forEach(element => {
+        response?.table?.tableCards.forEach(element => {
             totalTable += cardValues[element]
         });
         while (totalTable < 16) {
             totalTable = 0;
             response = await openTableCard(lobbyId);
-            response.table.tableCards.forEach(element => {
+            response?.table?.tableCards.forEach(element => {
                 totalTable += cardValues[element]
             });
         }
