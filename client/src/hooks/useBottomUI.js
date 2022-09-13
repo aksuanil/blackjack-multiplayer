@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react'
+import { useContext, useState } from 'react';
 import { SocketContext } from '../context/SocketProvider';
 
 export default function useBottomUI({ playerSeatIndex }) {
@@ -12,7 +12,7 @@ export default function useBottomUI({ playerSeatIndex }) {
         emitAction('addCard', lobbyData.lobbyId, { seatId: playerSeatIndex });
     }
     const onClickPass = (index) => {
-        //
+        emitAction('pass', lobbyData.lobbyId, { seatId: playerSeatIndex });
     }
     const onClickBet = (betAmount) => {
         if (betAmount < lobbyData?.seats[playerSeatIndex]?.cash) {
@@ -23,6 +23,6 @@ export default function useBottomUI({ playerSeatIndex }) {
         }
     }
 
-    return { lobbyData, warningMessage, setWarningMessage, onClickHit, onClickBet };
+    return { lobbyData, warningMessage, setWarningMessage, onClickHit, onClickBet, onClickPass };
 
 }

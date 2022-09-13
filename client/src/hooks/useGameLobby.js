@@ -1,18 +1,14 @@
-import { useEffect, useState, useContext } from 'react'
+import { useContext, useEffect, useState } from 'react';
 import { SocketContext } from '../context/SocketProvider';
 import { cardValues } from '../helpers/cardHelpers.js';
 
 export default function useGameLobby({ lobbyId, state }) {
-    const { emitJoin, onConnect, onUpdate, onCountdown, lobbyData, isLoading } = useContext(SocketContext);
+    const { emitJoin, onUpdate, onCountdown, lobbyData, isLoading } = useContext(SocketContext);
     const [usernamePopup, setUsernamePopup] = useState(false)
-    
+
     useEffect(() => {
-        emitJoin(lobbyId, state?.isCreate);
-        if (state?.username) {
-            onConnect(lobbyId, state.username);
-        }
-        else {
-            onConnect(lobbyId);
+        emitJoin(lobbyId, state?.isCreate, state?.username);
+        if (!state?.username) {
             setUsernamePopup(true);
         }
         onUpdate();

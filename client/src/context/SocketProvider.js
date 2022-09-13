@@ -22,10 +22,10 @@ function SocketProvider({ children }) {
         lobbyId: "",
         phase: "",
         seats: [
-            { id: 0, name: "", status: false, cash: 200, cards: [], isTurn: false, currentBet: 0, isBusted: false },
-            { id: 1, name: "", status: false, cash: 200, cards: [], isTurn: false, currentBet: 0, isBusted: false },
-            { id: 2, name: "", status: false, cash: 200, cards: [], isTurn: false, currentBet: 0, isBusted: false },
-            { id: 3, name: "", status: false, cash: 200, cards: [], isTurn: false, currentBet: 0, isBusted: false },
+            { id: 0, name: "", cash: 200, cards: [], isTurn: false, currentBet: 0, isBusted: false, isPlaying: false, isSeated: false, },
+            { id: 1, name: "", cash: 200, cards: [], isTurn: false, currentBet: 0, isBusted: false, isPlaying: false, isSeated: false, },
+            { id: 2, name: "", cash: 200, cards: [], isTurn: false, currentBet: 0, isBusted: false, isPlaying: false, isSeated: false, },
+            { id: 3, name: "", cash: 200, cards: [], isTurn: false, currentBet: 0, isBusted: false, isPlaying: false, isSeated: false, },
         ],
         table: {
             deck: [0, 0],
@@ -42,23 +42,29 @@ function SocketProvider({ children }) {
             countdown === 0 ? setCountdown(' ') : setCountdown(countdown);
         })
     };
+    const onSystemMessage = (appendMessage) => {
+        socket.on("systemMessage", (message, color) => {
+            console.log(color)
+            appendMessage(message, color);
+        });
+    }
     const emitAction = (action, lobbyId, data) => {
         socket.emit("action", action, lobbyId, data);
     }
-    const emitJoin = async (lobbyId, isCreated) => {
-        setIsLoading(true);
-        console.log('emitJoin')
-        await socket.emit('joinRoom', lobbyId, isCreated, (data) => {
-            // setIsLoading(data)
-        })
-    }
-    const onConnect = async (lobbyId, newUsername) => {
-        console.log('onConnect')
-        await socket.emit("onConnect", lobbyId, newUsername, (serverData) => {
-            setLobbyData(serverData);
+    const emitJoin = async (lobbyId, isCreated, newUsername) => {
+        await socket.emit('joinRoom', lobbyId, isCreated, newUsername, (data) => {
+            setLobbyData(data);
         });
         setIsLoading(false);
     }
+
+    // const onConnect = async (lobbyId, newUsername) => {
+    //     console.log('onConnect')
+    //     await socket.emit("onConnect", lobbyId, newUsername, (serverData) => {
+    //         setLobbyData(serverData);
+    //     });
+    //     setIsLoading(false);
+    // }
     const onUpdate = () => {
         socket.on("update", (serverData) => {
             setLobbyData(serverData);
@@ -75,7 +81,7 @@ function SocketProvider({ children }) {
     }
 
     return (
-        <SocketContext.Provider value={{ emitSendMessage, onReceiveMessage, emitJoin, emitAction, onConnect, onUpdate, lobbyData, socket, countdown, onCountdown, isLoading }}>
+        <SocketContext.Provider value={{ emitSendMessage, onReceiveMessage, onSystemMessage, emitJoin, emitAction, onUpdate, lobbyData, socket, countdown, onCountdown, isLoading }}>
             {children}
         </SocketContext.Provider>
     );

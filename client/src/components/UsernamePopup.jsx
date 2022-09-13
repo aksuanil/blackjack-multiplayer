@@ -1,14 +1,13 @@
-import React from 'react'
-import { useContext, useRef } from 'react';
+import React, { useContext, useRef } from 'react';
 import { SocketContext } from '../context/SocketProvider';
 
 export default function UsernamePopup({ popupCallback }) {
-    const { onConnect, lobbyData } = useContext(SocketContext);
+    const { emitJoin, lobbyData } = useContext(SocketContext);
 
     const usernameRef = useRef()
     const onSubmit = (e) => {
         e.preventDefault();
-        onConnect(lobbyData.lobbyId, usernameRef.current.value);
+        emitJoin(lobbyData.lobbyId, false, usernameRef.current.value);
         popupCallback(false);
     }
     return (

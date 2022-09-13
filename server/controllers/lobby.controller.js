@@ -5,10 +5,10 @@ const initializeLobby = async (lobbyId) => {
         lobbyId: lobbyId,
         phase: "NOT_STARTED",
         seats: [
-            { id: 0, socketId: "", name: "", status: false, cash: 200, cards: [], bet: 0, isTurn: false, isPlaying: false },
-            { id: 1, socketId: "", name: "", status: false, cash: 200, cards: [], bet: 0, isTurn: false, isPlaying: false },
-            { id: 2, socketId: "", name: "", status: false, cash: 200, cards: [], bet: 0, isTurn: false, isPlaying: false },
-            { id: 3, socketId: "", name: "", status: false, cash: 200, cards: [], bet: 0, isTurn: false, isPlaying: false },
+            { id: 0, socketId: "", name: "", cash: 200, cards: [], bet: 0, isTurn: false, isPlaying: false, isSeated: false },
+            { id: 1, socketId: "", name: "", cash: 200, cards: [], bet: 0, isTurn: false, isPlaying: false, isSeated: false },
+            { id: 2, socketId: "", name: "", cash: 200, cards: [], bet: 0, isTurn: false, isPlaying: false, isSeated: false },
+            { id: 3, socketId: "", name: "", cash: 200, cards: [], bet: 0, isTurn: false, isPlaying: false, isSeated: false },
         ],
         table: {
             deck: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
@@ -34,21 +34,41 @@ const findLobby = async (lobbyId) => {
 
 const getActiveSeats = async (lobbyId) => {
     const result = await db.aggregate([
-        { $match: { lobbyId: lobbyId, 'seats.status': true } },
+        { $match: { lobbyId: lobbyId, 'seats.isSeated': true, 'seats.isPlaying': true } },
         {
             $project: {
                 seats: {
                     $filter: {
                         input: '$seats',
                         as: 'seats',
-                        cond: { $eq: ['$$seats.status', true] }
+                        cond: { $eq: ['$$seats.isSeated', true], $eq: ['$$seats.isPlaying', true] }
                     }
                 }
             }
         }
     ]).toArray();
 
-    // const result = await db.find({ lobbyId: lobbyId, "seats.status": true }).project({ seats: 1, _id: 0 }).toArray();
+    // const result = await db.find({ lobbyId: lobbyId, "seats.isSeated": true }).project({ seats: 1, _id: 0 }).toArray();
+    return result[0]
+}
+
+const getSeatedSeats = async (lobbyId) => {
+    const result = await db.aggregate([
+        { $match: { lobbyId: lobbyId, 'seats.isSeated': true } },
+        {
+            $project: {
+                seats: {
+                    $filter: {
+                        input: '$seats',
+                        as: 'seats',
+                        cond: { $eq: ['$$seats.isSeated', true] }
+                    }
+                }
+            }
+        }
+    ]).toArray();
+
+    // const result = await db.find({ lobbyId: lobbyId, "seats.isSeated": true }).project({ seats: 1, _id: 0 }).toArray();
     return result[0]
 }
 
@@ -83,6 +103,29 @@ const startTurnLoop = async (lobbyId, i, id) => {
             ], returnOriginal: false, returnDocument: "after"
         });
     return res;
+}
+const skipTurn = async (lobbyId, id) => {
+    const res = await db.find(
+        { lobbyId: lobbyId, "seats.isTurn": true },
+        { returnOriginal: false, returnDocument: "after" }).project({ 'seats.$': 1, _id: 0 }).toArray();
+    await db.updateOne(
+        { lobbyId: lobbyId, "seats.id": id },
+        {
+            $set: {
+                "seats.$.isTurn": false
+            }
+        });
+    const result = await db.findOneAndUpdate(
+        { lobbyId: lobbyId },
+        {
+            $set: {
+                [`seats.${res[0].seats[0].id === 3 ? 0 : (res[0].seats[0].id) + 1}.isTurn`]: true
+            }
+        },
+        {
+            returnOriginal: false, returnDocument: "after"
+        });
+    return result.value;
 }
 const endTurnLoop = async (lobbyId) => {
     const res = await db.findOneAndUpdate(
@@ -135,10 +178,10 @@ const deleteRoom = async (lobbyId) => {
 const disconnectWithSocketId = async (lobbyId, socketId) => {
     const res = await db.findOneAndUpdate(
         { lobbyId: lobbyId, "seats.socketId": socketId },
-        { $set: { [`seats.$.status`]: false, [`seats.$.socketId`]: "", [`seats.$.name`]: "", [`seats.$.cash`]: 200, [`seats.$.cards`]: [], [`seats.$.isBusted`]: false } },
+        { $set: { [`seats.$.isSeated`]: false, [`seats.$.socketId`]: "", [`seats.$.name`]: "", [`seats.$.cash`]: 200, [`seats.$.cards`]: [], [`seats.$.isBusted`]: false } },
         { returnOriginal: false, returnDocument: "after" });
     return (res.value);
 };
 
-export { initializeLobby, getLobbyData, findLobby, openTableCard, startTurnLoop, endTurnLoop, clearRound, getActiveSeats, disconnectWithSocketId, changePhase, deleteRoom };
+export { initializeLobby, getLobbyData, findLobby, openTableCard, startTurnLoop, skipTurn, endTurnLoop, clearRound, getActiveSeats, getSeatedSeats, disconnectWithSocketId, changePhase, deleteRoom };
 

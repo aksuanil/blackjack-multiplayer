@@ -13,7 +13,7 @@ import useBottomUI from '../hooks/useBottomUI';
 import PopupUI from './PopupUI';
 
 export default function BottomUI({ playerSeatIndex }) {
-    const { lobbyData, warningMessage, setWarningMessage, onClickHit, onClickBet } = useBottomUI({ playerSeatIndex })
+    const { lobbyData, warningMessage, setWarningMessage, onClickHit, onClickBet, onClickPass } = useBottomUI({ playerSeatIndex })
     return (
         <>
             <div className='curve bg-gradient-to-t from-yellow-900 via-yellow-700 to-yellow-900 flex items-center border-t-4 border-yellow-900 shadow-[0_35px_20px_35px_rgba(0,0,0,1)]'>
@@ -27,7 +27,7 @@ export default function BottomUI({ playerSeatIndex }) {
                     <div className='flex gap-12 w-1/3 justify-center p-4'>
                         <button className='border-2 border-black rounded-full font-bold w-20 shadow-black shadow-md  bg-green-800 text-sm'><img className='w-8 mx-auto' src={doubleIcon} alt='DoubleIcon' />DOUBLE</button>
                         <button onClick={() => onClickHit(playerSeatIndex)} className='border-2 border-black rounded-full w-20 bg-red-700 hover:bg-red-600 shadow-black shadow-md  font-bold transition-all duration-200'><img className='w-10 mx-auto' src={addCard} alt='AddCardIcon' />HIT</button>
-                        <button className='border-2 border-black rounded-full h-20 w-20 bg-gradient-to-t from-yellow-800 via-yellow-500 to-yellow-800 shadow-black shadow-md font-bold'><img className='w-8 mx-auto' src={standIcon} alt='StandIcon' />STAND</button>
+                        <button onClick={() => onClickPass(playerSeatIndex)} className='border-2 border-black rounded-full h-20 w-20 bg-gradient-to-t from-yellow-800 via-yellow-500 to-yellow-800 shadow-black shadow-md font-bold'><img className='w-8 mx-auto' src={standIcon} alt='StandIcon' />STAND</button>
                     </div>
                     :
                     <div className='flex gap-12 w-1/3 justify-center p-4'>

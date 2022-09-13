@@ -4,7 +4,7 @@ import { getActiveSeats, getLobbyData } from './lobby.controller.js';
 const getSeated = async (lobbyId, seatId, socketId, name) => {
     const res = await db.findOneAndUpdate(
         { lobbyId: lobbyId },
-        { $set: { [`seats.${seatId}.status`]: true, [`seats.${seatId}.socketId`]: socketId, [`seats.${seatId}.name`]: name } },
+        { $set: { [`seats.${seatId}.isSeated`]: true, [`seats.${seatId}.socketId`]: socketId, [`seats.${seatId}.name`]: name } },
         { returnOriginal: false, returnDocument: "after" });
     return (res.value);
 };
@@ -12,10 +12,11 @@ const getSeated = async (lobbyId, seatId, socketId, name) => {
 const getUnseated = async (lobbyId, seatId) => {
     const res = await db.findOneAndUpdate(
         { lobbyId: lobbyId },
-        { $set: { [`seats.${seatId}.status`]: false, [`seats.${seatId}.socketId`]: "", [`seats.${seatId}.cash`]: 200, [`seats.${seatId}.cards`]: [], [`seats.${seatId}.isTurn`]: false, [`seats.${seatId}.isBusted`]: false } },
+        { $set: { [`seats.${seatId}.isSeated`]: false, [`seats.${seatId}.socketId`]: "", [`seats.${seatId}.cash`]: 200, [`seats.${seatId}.cards`]: [], [`seats.${seatId}.isTurn`]: false, [`seats.${seatId}.isBusted`]: false, [`seats.${seatId}.isPlaying`]: false } },
         { returnOriginal: false, returnDocument: "after" });
     return (res.value);
 };
+
 
 const addCash = async (lobbyId, seatId, cashAmount) => {
     console.log('beat amount' + cashAmount)
@@ -74,5 +75,13 @@ const setBusted = async (lobbyId, seatId, isBusted) => {
     return (res.value);
 };
 
-export { getSeated, getUnseated, addCash, addCard, clearCards, addStartingCards, setBusted, addBet };
+const setPlaying = async (lobbyId, seatId, isPlaying) => {
+    const res = await db.findOneAndUpdate(
+        { lobbyId: lobbyId },
+        { $set: { [`seats.${seatId}.isPlaying`]: isPlaying } },
+        { returnOriginal: false, returnDocument: "after" })
+    return (res.value);
+};
+
+export { getSeated, getUnseated, addCash, addCard, clearCards, addStartingCards, setBusted, setPlaying, addBet };
 
