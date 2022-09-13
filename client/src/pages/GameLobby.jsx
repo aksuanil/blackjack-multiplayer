@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import tableArt from '../assets/images/Table.jpg';
 import BottomUI from '../components/BottomUI';

@@ -38,8 +38,8 @@ function SocketProvider({ children }) {
     });
 
     const onCountdown = () => {
-        socket.on("countdown", (serverData) => {
-            setCountdown(serverData);
+        socket.on("countdown", (countdown) => {
+            countdown === 0 ? setCountdown(' ') : setCountdown(countdown);
         })
     };
     const emitAction = (action, lobbyId, data) => {
