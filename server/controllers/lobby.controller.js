@@ -105,6 +105,8 @@ const startTurnLoop = async (lobbyId, i, id) => {
     return res;
 }
 const skipTurn = async (lobbyId, id) => {
+    const activeSeats = await getActiveSeats(lobbyId);
+    const lastActiveSeat = activeSeats.seats[activeSeats.seats.length - 1]
     const res = await db.find(
         { lobbyId: lobbyId, "seats.isTurn": true },
         { returnOriginal: false, returnDocument: "after" }).project({ 'seats.$': 1, _id: 0 }).toArray();
@@ -115,17 +117,25 @@ const skipTurn = async (lobbyId, id) => {
                 "seats.$.isTurn": false
             }
         });
-    const result = await db.findOneAndUpdate(
-        { lobbyId: lobbyId },
-        {
-            $set: {
-                [`seats.${res[0].seats[0].id === 3 ? 0 : (res[0].seats[0].id) + 1}.isTurn`]: true
-            }
-        },
-        {
-            returnOriginal: false, returnDocument: "after"
-        });
-    return result.value;
+    const currentTurnSeat = res[0].seats[0];
+
+    if (currentTurnSeat.id === lastActiveSeat.id) {
+        const response = await endTurnLoop(lobbyId);
+        return response.value;
+    }
+    else {
+        const response = await db.findOneAndUpdate(
+            { lobbyId: lobbyId },
+            {
+                $set: {
+                    [`seats.${(currentTurnSeat.id) + 1}.isTurn`]: true
+                }
+            },
+            {
+                returnOriginal: false, returnDocument: "after"
+            });
+        return response.value;
+    }
 }
 const endTurnLoop = async (lobbyId) => {
     const res = await db.findOneAndUpdate(

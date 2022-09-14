@@ -10,7 +10,7 @@ export default function Seat({ index, isSeated, setIsSeated, setPlayerSeatIndex 
     return (
         <div className={lobbyData?.seats[index]?.isTurn ? 'flex flex-col w-1/4 px-6 pb-6 h-full justify-end relative bg-gradient-to-b from-transparent bg-opacity-50 via-green-500 to-green-900' : 'flex flex-col w-1/4 px-6 pb-6 h-full justify-end relative'}>
             {lobbyData?.seats[index]?.isTurn ? <TimerArrow /> : <div></div>}
-            {lobbyData?.seats[index]?.isBusted ? <div className='flex justify-center text-red-900 font-bold text-xl bg-red-600'>BUSTED</div> : (lobbyData?.phase === 'ROUND_END' && lobbyData?.seats[index]?.status) && <div className='flex justify-center text-blue-900 font-bold text-xl bg-blue-600'>WON</div>}
+            {lobbyData?.seats[index]?.isBusted ? <div className='flex justify-center text-red-900 font-bold text-xl bg-red-600'>BUSTED</div> : (lobbyData?.phase === 'ROUND_END' && lobbyData?.seats[index]?.isSeated) && <div className='flex justify-center text-blue-900 font-bold text-xl bg-blue-600'>WON</div>}
             <div className='relative min-h-[140px]'>
                 {lobbyData?.seats[index]?.cards?.map((card, index) => {
                     return <div key={index} className="shadow-[-6px_0px_8px_-2px_rgba(0,0,0,0.2)] shadow-black rounded-md animate-flipInY" style={{ position: 'absolute', right: `calc(40% - ${index}*2rem)`, animationDelay: `${index <= 1 && index * 1000}ms` }}>
@@ -24,7 +24,7 @@ export default function Seat({ index, isSeated, setIsSeated, setPlayerSeatIndex 
                 <div className='flex justify-around text-zinc-300 font-semibold text-lg tracking-wider py-1 mt-8 rounded-md border-2 border-stone-900' style={{ backgroundColor: '#171a1f', backgroundImage: '-webkit-linear-gradient(-30deg, #AD1D00 65%, #E02500 35%)' }}>
                     {lobbyData?.seats[index]?.name || "TEST NAME"}
                 </div>
-                : lobbyData?.seats[index]?.status ?
+                : lobbyData?.seats[index]?.isSeated ?
                     <div className='flex flex-col'>
                         <div className='flex justify-around font-semibold text-lg rounded-t-md border-2 border-b-0 border-stone-800 bg-zinc-700 w-3/4 self-center' >
                             <div>

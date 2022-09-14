@@ -104,9 +104,11 @@ io.on('connection', (socket) => {
                 io.sockets.in(lobbyId).emit("update", await addCard(lobbyId, data.seatId));
                 break;
             case "pass":
-                //skip turn to next player
-                //arrange the counter
                 io.sockets.in(lobbyId).emit("update", await skipTurn(lobbyId, data.seatId));
+                console.table(intervalPool)
+                clearInterval(intervalPool[lobbyId + '_turnLoop' + data.seatId]);
+                //substract rest of the timer from the next one 
+                //create new functionality to calculate turn timers
                 break;
             case "clearCards":
                 clearCards(lobbyId, data.seatId);
@@ -142,13 +144,13 @@ io.on('connection', (socket) => {
             func();
         }, delay);
         debouncePool[id]();
-    }
+    };
 
     const startRound = async (lobbyId) => {
         await clearRound(lobbyId);
         let seatedSeats = await getSeatedSeats(lobbyId);
         seatedSeats.seats.forEach(async item => {
-            await setPlaying(lobbyId, item.id);
+            await setPlaying(lobbyId, item.id, true);
         });
         //set playing status
         if (seatedSeats) {
